@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import lombok.Data;
 
@@ -27,9 +29,14 @@ public class ResponseCuenta implements Serializable{
 	private ResponseProducto producto;
 	private List<ResponseSaldo>saldos;
 	@JsonInclude(value = Include.NON_EMPTY)
-	private ResponseCredito datoCredito;
+	private ResponseCredito datosCredito;
 	@JsonInclude(value = Include.NON_EMPTY)
-	private ResponseInversion datoInversion;
+	private ResponseInversion datosInversion;
+	
+	@JsonProperty(access = Access.WRITE_ONLY)
+	private int codigo;
+	@JsonProperty(access = Access.WRITE_ONLY)
+	private String mensaje;
 	
 	private static final long serialVersionUID = 1L;
 }

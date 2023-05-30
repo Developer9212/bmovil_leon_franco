@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fenoreste.modelos.ResponseCuenta;
+import com.fenoreste.modelos.ResponseError;
 import com.fenoreste.modelos.ResponseMovimientos;
 import com.fenoreste.service.CapaCuentaService;
 
@@ -28,12 +29,15 @@ public class CuentasController {
 	@GetMapping(value="cuentas-captacion/{numeroCuenta}",params = {"subtipoCuenta"})
 	public ResponseEntity<?> buscarCuentaCaptacion(@PathVariable("numeroCuenta") String numeroCuenta,
 												   @RequestParam("subtipoCuenta") String tipoCuenta) {
-		ResponseCuenta response = capaCuentaService.detalleCuentaCaptacion(numeroCuenta,tipoCuenta);
 		log.info("Accediendo a detalles cuenta captacion....................");
-		if(response.getNumeroCuenta() != null) {
+		ResponseCuenta response = capaCuentaService.detalleCuentaCaptacion(numeroCuenta,tipoCuenta);		
+		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			ResponseError error = new ResponseError();
+			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+			error.setMensajeUsuario(response.getMensaje());
+			return new ResponseEntity<>(error,HttpStatus.CONFLICT);
 		}
 	}
 	

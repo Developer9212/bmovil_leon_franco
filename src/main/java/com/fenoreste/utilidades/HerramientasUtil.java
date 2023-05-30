@@ -30,7 +30,11 @@ public class HerramientasUtil {
 			opa.setIdproducto(Integer.parseInt(productBankIdentifier.substring(6, 11)));
 			opa.setIdauxiliar(Integer.parseInt(productBankIdentifier.substring(11, 19)));
 		} catch (Exception e) {
+			opa.setIdorigenp(0);
+			opa.setIdproducto(0);
+			opa.setIdauxiliar(0);
 			System.out.println("Error al convertir formato opa:"+e.getMessage());
+			return opa;			
 		}		
 	 return opa;
 	}
@@ -40,9 +44,21 @@ public class HerramientasUtil {
 		String fecha = "";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
-			fecha = sdf.format(date)+"T00:00:00";
+			fecha = sdf.format(date);
 		} catch (Exception e) {
 			log.info("Error al convertir fecha:"+e.getMessage());
+		}
+		return fecha;
+	}
+	
+	//Convertimos una fecha a date y retornamos solo marcas de tiempos hh:mm:ss.S
+	public String convertFechaDateHora(Date date) {
+		String fecha = "";
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		try {
+			fecha = sdf.format(date);
+		} catch (Exception e) {
+			log.info("Error al convertir fecha Minutes:"+e.getMessage());
 		}
 		return fecha;
 	}

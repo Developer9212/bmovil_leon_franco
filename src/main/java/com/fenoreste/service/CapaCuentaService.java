@@ -65,100 +65,110 @@ public class CapaCuentaService {
 		ResponseCuenta response = new ResponseCuenta();
 		try {
 			Opa opa = util.opa(opaBase);
+			if(opa.getIdorigenp() > 0 && opa.getIdproducto() > 0 && opa.getIdauxiliar() > 0) {
 			AuxiliarPK cuenta_ejePk = new AuxiliarPK(opa.getIdorigenp(),opa.getIdproducto(),opa.getIdauxiliar());
 			Auxiliar cuenta_eje = auxiliarService.buscarPorId(cuenta_ejePk);
-			
-			if(cuenta_eje.getEstatus() == 2) {
-				log.info("Accediendo con estatus 2");
-				response.setNumeroCuenta(opaBase);
-				//Buscamos el producto para saber que tipo de cuenta es
-				Producto producto = productoService.buscarPorId(cuenta_eje.getPk().getIdproducto());
-				ResponseProducto responseProducto = new ResponseProducto();
-				ResponseSaldo res_saldo = null;
-				List<ResponseSaldo>saldos = new ArrayList<>();
-				switch (producto.getTipoproducto()) {
-				case 0:
-					if(tipoCuenta.equals("AHORRO")) {
-						response.setTipoCuenta("PERSONAL");
-						response.setSubtipoCuenta("AHORRO");
-						response.setNivelOperacion("DEPOSITOS_y_RETIROS");
-						responseProducto.setTienePlanAhorro(true);
+			   if(cuenta_eje != null) {
+				   if(cuenta_eje.getEstatus() == 2) {
+						log.info("Accediendo con estatus 2");
+						response.setNumeroCuenta(opaBase);
+						//Buscamos el producto para saber que tipo de cuenta es
+						Producto producto = productoService.buscarPorId(cuenta_eje.getPk().getIdproducto());
+						ResponseProducto responseProducto = new ResponseProducto();
+						ResponseSaldo res_saldo = null;
+						List<ResponseSaldo>saldos = new ArrayList<>();
+						switch (producto.getTipoproducto()) {
+						case 0:
+							if(tipoCuenta.equals("AHORRO")) {
+								response.setTipoCuenta("PERSONAL");
+								response.setSubtipoCuenta("AHORRO");
+								response.setNivelOperacion("DEPOSITOS_Y_RETIROS");
+								responseProducto.setTienePlanAhorro(true);
+								
+								res_saldo = new ResponseSaldo();						  
+								res_saldo.setTipo("DISPONIBLE");
+								res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue() - cuenta_eje.getGarantia().doubleValue());
+								res_saldo.setMoneda("MXN");						  
+								saldos.add(res_saldo);
+								  
+								res_saldo = new ResponseSaldo();
+								res_saldo.setTipo("BLOQUEADO");
+								res_saldo.setMonto(cuenta_eje.getGarantia().doubleValue());
+								res_saldo.setMoneda("MXN");
+								saldos.add(res_saldo);
+							}					
+							break;
+						case 1:
+							if(tipoCuenta.equals("INVERSION")) {
+								response.setTipoCuenta("PERSONAL");
+								response.setSubtipoCuenta("CREDITO");
+								
+								ResponseInversion inversion_res = new ResponseInversion();
+								res_saldo = new ResponseSaldo();
+								response.setSubtipoCuenta("INVERSION");
+								response.setNivelOperacion("SOLO_CONSULTA");
+								
+								  
+								res_saldo.setTipo("ACTUAL");
+								res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue());
+								res_saldo.setMoneda("MXN");						  
+								saldos.add(res_saldo);
+								res_saldo = new ResponseSaldo();
+								if(auxiliarService.fechaVencimientoAmortizacion(cuenta_eje.getPk()).after(origenService.buscarPorId(cuenta_eje.getPk().getIdorigenp()).getFechatrabajo())) {							  						  
+									  res_saldo.setTipo("BLOQUEADO");
+									  res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue() );
+									  res_saldo.setMoneda("MXN");
+								  }else {
+									  res_saldo.setTipo("DISPONIBLE");
+									  res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue());
+									  res_saldo.setMoneda("MXN");							  
+								  }
+								saldos.add(res_saldo);
+								
+								 inversion_res.setFechaVencimiento(util.convertFechaDate(auxiliarService.fechaVencimientoAmortizacion(cuenta_eje.getPk())).replace("T00:00:00",""));
+								 response.setDatosInversion(inversion_res);
+							}	
+						   break;
+						}
+						response.setTipoRelacion("UNICO_PROPIETARIO");
+						response.setEstatus("APERTURADA");
+						response.setFechaApertura(util.convertFechaDate(cuenta_eje.getFechaactivacion()).substring(0,10));
+						//Vamos a buscar fecha de ultimo movimiento
+						AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(cuenta_ejePk);
+						response.setFechaUltimoMovimiento(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
+						response.setFechaUltimaNotificacion(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
 						
-						res_saldo = new ResponseSaldo();						  
-						res_saldo.setTipo("DISPONIBLE");
-						res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue() - cuenta_eje.getGarantia().doubleValue());
-						res_saldo.setMoneda("MXN");						  
-						saldos.add(res_saldo);
-						  
-						res_saldo = new ResponseSaldo();
-						res_saldo.setTipo("BLOQUEADO");
-						res_saldo.setMonto(cuenta_eje.getGarantia().doubleValue());
-						res_saldo.setMoneda("MXN");
-						saldos.add(res_saldo);
-					}					
-					break;
-				case 1:
-					if(tipoCuenta.equals("INVERSION")) {
-						response.setTipoCuenta("PERSONAL");
-						response.setSubtipoCuenta("CREDITO");
+						//Buscamos datos personales del socio
+						PersonaPK personaPk = new PersonaPK(cuenta_eje.getIdorigen(),cuenta_eje.getIdgrupo(),cuenta_eje.getIdsocio());
+						Persona persona = personaService.buscarPorId(personaPk);
+						response.setNumeroSocio(String.format("%06d",persona.getPk().getIdorigen())+persona.getPk().getIdgrupo()+String.format("%06d",personaPk.getIdsocio()));
+						response.setNombreSocio(persona.getNombre()+" "+persona.getAppaterno()+" "+persona.getApmaterno());
+						response.setAlias(producto.getNombre());
+						response.setClabe("");
 						
-						ResponseInversion inversion_res = new ResponseInversion();
-						res_saldo = new ResponseSaldo();
-						response.setTipoCuenta("INVERSION");
-						response.setSubtipoCuenta("INVERSION");
-						response.setNivelOperacion("SOLO_CONSULTA");
 						
-						  
-						res_saldo.setTipo("ACTUAL");
-						res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue());
-						res_saldo.setMoneda("MXN");						  
-						saldos.add(res_saldo);
-						res_saldo = new ResponseSaldo();
-						if(auxiliarService.fechaVencimientoAmortizacion(cuenta_eje.getPk()).after(origenService.buscarPorId(cuenta_eje.getPk().getIdorigenp()).getFechatrabajo())) {							  						  
-							  res_saldo.setTipo("BLOQUEADO");
-							  res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue() );
-							  res_saldo.setMoneda("MXN");
-						  }else {
-							  res_saldo.setTipo("DISPONIBLE");
-							  res_saldo.setMonto(cuenta_eje.getSaldo().doubleValue());
-							  res_saldo.setMoneda("MXN");							  
-						  }
-						saldos.add(res_saldo);
+						responseProducto.setId(producto.getIdproducto().toString());
+						responseProducto.setNombre(producto.getNombre());
 						
-						 inversion_res.setFechaVencimiento(util.convertFechaDate(auxiliarService.fechaVencimientoAmortizacion(cuenta_eje.getPk())).replace("T00:00:00",""));
-						 response.setDatoInversion(inversion_res);
-					}	
-				   break;
-				}
-				response.setTipoRelacion("UNICO_PROPIETARIO");
-				response.setEstatus("ACTIVO");
-				response.setFechaApertura(util.convertFechaDate(cuenta_eje.getFechaactivacion()).substring(0,10));
-				//Vamos a buscar fecha de ultimo movimiento
-				AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(cuenta_ejePk);
-				response.setFechaUltimoMovimiento(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
-				response.setFechaUltimaNotificacion(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
-				
-				//Buscamos datos personales del socio
-				PersonaPK personaPk = new PersonaPK(cuenta_eje.getIdorigen(),cuenta_eje.getIdgrupo(),cuenta_eje.getIdsocio());
-				Persona persona = personaService.buscarPorId(personaPk);
-				response.setNumeroSocio(String.format("%06d",persona.getPk().getIdorigen())+persona.getPk().getIdgrupo()+String.format("%06d",personaPk.getIdsocio()));
-				response.setNombreSocio(persona.getNombre()+" "+persona.getAppaterno()+" "+persona.getApmaterno());
-				response.setAlias(producto.getNombre());
-				response.setClabe(opaBase);
-				
-				
-				responseProducto.setId(producto.getIdproducto().toString());
-				responseProducto.setNombre(producto.getNombre());
-				
-				response.setProducto(responseProducto);
-				response.setSaldos(saldos);
-				
-			}		
-
-
+						response.setProducto(responseProducto);
+						response.setSaldos(saldos);
+						
+					}else {
+						response.setCodigo(409);
+						response.setMensaje("Cuenta inactiva");
+					}
+			   }else {
+				   response.setCodigo(404);
+				   response.setMensaje("Cuenta no existe");
+			   }
+			}else {
+				   response.setCodigo(409);
+				   response.setMensaje("Numero de cuenta invalido,requerido 19 digitos");
+			}
 		} catch (Exception e) {
-			log.info("Error al obtener detalles de cuenta captacion:" + e.getMessage());
-		}
+			  log.info("Error al obtener detalles de cuenta captacion:" + e.getMessage());
+			  return response;
+			}
 		return response;
 	}
 	
@@ -181,9 +191,9 @@ public class CapaCuentaService {
 					case 2:
 						if(tipoCuenta.equals("CREDITO")) {
 							response.setNumeroCuenta(opaBase);
-						    response.setTipoCuenta("CREDITO");
+						    response.setTipoCuenta("PERSONAL");
 							response.setSubtipoCuenta("CREDITO");
-							response.setNivelOperacion("DEPOSITOS");
+							response.setNivelOperacion("SOLO_DEPOSITOS");
 							
 							log.info("Si entro como prestamo");
 							ResponseCredito res_credito = new ResponseCredito();
@@ -217,30 +227,29 @@ public class CapaCuentaService {
 							String sai_auxiliar = funcionService.sai_auxiliar(cuenta_eje.getPk());
 							String [] sai_parameters = sai_auxiliar.split("\\|");
 							List<String> valores_sai = Arrays.asList(sai_parameters);
-							System.out.println("Interese ordinarios:"+sai_auxiliar);						  
 							res_saldo = new ResponseSaldo();
-							res_saldo.setTipo("INTERESES_ORDINARIOS");
+							res_saldo.setTipo("INTERESES_VENCIDOS");
 							res_saldo.setMonto(new Double(valores_sai.get(6)));
 							res_saldo.setMoneda("MXN");
 							saldos.add(res_saldo);
 							  
 							//Moratorios
 							res_saldo = new ResponseSaldo();
-							res_saldo.setTipo("INTERESES_MORATORIOS");
+							res_saldo.setTipo("INTERESES_MORATORIOS_VENCIDOS");
 							res_saldo.setMonto(new Double(valores_sai.get(15)));
 							res_saldo.setMoneda("MXN");
 							saldos.add(res_saldo);
 							  
 							//Iva Intereses Ordinarios
 							res_saldo = new ResponseSaldo();
-							res_saldo.setTipo("IVA_INTERESES_ORDINARIOS");
+							res_saldo.setTipo("IVA_INTERESES_VENCIDOS");
 							res_saldo.setMonto(new Double(valores_sai.get(17)));
 							res_saldo.setMoneda("MXN");
 							saldos.add(res_saldo);
 							  
 							//Iva Intereses Moratorios
 							res_saldo = new ResponseSaldo();
-							res_saldo.setTipo("IVA_INTERESES_MORATORIOS");
+							res_saldo.setTipo("IVA_INTERESES_MORATORIOS_VENCIDOS");
 							res_saldo.setMonto(new Double(valores_sai.get(18)));
 							res_saldo.setMoneda("MXN");
 							saldos.add(res_saldo);
@@ -251,9 +260,9 @@ public class CapaCuentaService {
 							Amortizacion ultima_amortizacion = amortizacionService.buscarUltimoPago(cuenta_eje.getPk());
 							res_credito.setPlazosRestantes(cuenta_eje.getPlazo()-pagadas.size());
 							res_credito.setPlazosTotales((int) cuenta_eje.getPlazo());
-							res_credito.setUnidadPlazo("MES");
-							res_credito.setFechaOrigen(util.convertFechaDate(cuenta_eje.getFechaactivacion())+"Z");
-							res_credito.setFechaTermino(util.convertFechaDate(ultima_amortizacion.getVence())+"Z");
+							res_credito.setUnidadPlazo("MESES");
+							res_credito.setFechaOrigen(util.convertFechaDate(cuenta_eje.getFechaactivacion())+"T00:00:00Z");
+							res_credito.setFechaTermino(util.convertFechaDate(ultima_amortizacion.getVence())+"T00:00:00Z");
 							  
 							//Proximo Pago
 							String cadena_prestamo_cuento = funcionService.prestamo_cuanto(cuenta_eje.getPk(),cuenta_eje.getTipoamortizacion().intValue());
@@ -267,17 +276,17 @@ public class CapaCuentaService {
 							  
 							//Ultimo Pago
 							pago = new ResponsePago();
-							pago.setFecha(util.convertFechaDate(ultima_amortizacion.getVence()));
+							pago.setFecha(util.convertFechaDate(ultima_amortizacion.getVence())+"T00:00:00");
 							pago.setMonto(ultima_amortizacion.getAbono().doubleValue());
 							pago.setMoneda("MXN");
 							  
 							res_credito.setUltimoPago(pago);
 							  
-							response.setDatoCredito(res_credito);
+							response.setDatosCredito(res_credito);
 							response.setSaldos(saldos);
 							
 							response.setTipoRelacion("UNICO_PROPIETARIO");
-							response.setEstatus("ACTIVO");
+							response.setEstatus("APERTURADA");
 							response.setFechaApertura(util.convertFechaDate(cuenta_eje.getFechaactivacion()).substring(0,10));
 							//Vamos a buscar fecha de ultimo movimiento
 							AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(cuenta_ejePk);
@@ -291,7 +300,7 @@ public class CapaCuentaService {
 							response.setNombreSocio(persona.getNombre()+" "+persona.getAppaterno()+" "+persona.getApmaterno());
 							
 							response.setAlias(producto.getNombre());
-							response.setClabe(opaBase);
+							response.setClabe("");
 							
 							
 							responseProducto.setId(producto.getIdproducto().toString());
@@ -302,15 +311,8 @@ public class CapaCuentaService {
 						}						
 						break;	
 				 }				
-				}
-				
-				
-				
-				
-				
-			}		
-
-
+			   }				
+			}	
 		} catch (Exception e) {
 			log.info("Error al obtener detalles de cuenta colocacion:" + e.getMessage());
 		}
@@ -327,13 +329,15 @@ public class CapaCuentaService {
         	 if(auxiliar.getEstatus() == 2) {
         		 ResponsePaginacion paginacion = new ResponsePaginacion();
         		 response.setNumeroCuenta(opaBase);
+        		 response.setTipoCuenta("PERSONAL");
+        		 response.setSubtipoCuenta(tipo);
         		 List<Movimiento>listadoMovimientos = new ArrayList<>();
         		 List<AuxiliarD>listaAuxiliaresD = auxiliarDService.buscarTodosMovs(auxiliarPK,util.convertFechaString(fechaInicio),util.convertFechaString(fechaFin),PageRequest.of(inicioPage,finPage));
         		 for(int i=0;i<listaAuxiliaresD.size();i++) {
         			 AuxiliarD mov_ad = listaAuxiliaresD.get(i);
         			 Movimiento mov = new Movimiento();
         			 log.info("Numero de transaccion:"+mov_ad.getTransaccion());
-        			 mov.setId(mov_ad.getTransaccion());
+        			 mov.setId(String.valueOf(mov_ad.getTransaccion()));
         			 if(mov_ad.getCargoabono() == 0) {
                           mov.setDescripcion("RETIRO"); 
                           mov.setTipo("CREDITO");
@@ -341,12 +345,16 @@ public class CapaCuentaService {
                           mov.setDescripcion("DEPOSITO"); 
                           mov.setTipo("DEBITO");
         			 }
-        			 mov.setFechaTransaccion(util.convertFechaDate(mov_ad.getFecha()));
-        			 mov.setFechaPublicacion(util.convertFechaDate(mov_ad.getFecha()));
+        			 log.info("fechaaaaaaaaaaaaaaaaaaa.................."+util.convertFechaDateHora(mov_ad.getFecha()));
+        			 mov.setFechaTransaccion(util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha()));
+        			 mov.setFechaPublicacion(util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha()));
         			 mov.setMonto(mov_ad.getMonto().doubleValue());
         			 listadoMovimientos.add(mov);
         		 }
+        		 
         		 paginacion.setTotal(auxiliarDService.contadorPorFecha(auxiliarPK, util.convertFechaString(fechaInicio),util.convertFechaString(fechaFin)));
+        		 paginacion.setOffset(inicioPage);
+        		 paginacion.setLimit(finPage);
         		 response.setMovimientos(listadoMovimientos);
         		 response.setPaginacion(paginacion);
         		 

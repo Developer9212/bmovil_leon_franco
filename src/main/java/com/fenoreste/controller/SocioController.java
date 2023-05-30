@@ -33,7 +33,7 @@ public class SocioController {
 		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
 		}
 	}
 	
@@ -47,7 +47,7 @@ public class SocioController {
 		if(response.getCuentas().size() > 0) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
 		}
 	}
 	

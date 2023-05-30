@@ -7,6 +7,7 @@ package com.fenoreste.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -34,7 +35,7 @@ public class AuxiliarD implements Serializable{
     @Id
     private Integer transaccion; 
     private AuxiliarPK pk;
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date fecha;
     private Short cargoabono;
     private BigDecimal monto;

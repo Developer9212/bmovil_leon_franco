@@ -5,11 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fenoreste.modelos.RequestTransferencia;
+import com.fenoreste.modelos.ResponseError;
 import com.fenoreste.modelos.ResponseTransferencia;
 import com.fenoreste.service.CapaTransferencias;
 
@@ -24,23 +26,59 @@ public class TransferenciaController {
 	@Autowired
 	private CapaTransferencias capaTransferencias;
 	
-	@GetMapping(value="entre-cuentas")
+	@PostMapping(value="entre-cuentas")
 	public ResponseEntity<?> entreCuentas(@RequestBody RequestTransferencia peticion) {
-		
+		log.info("................Accediendo a transferencia entre cuentas propias...............");
 		Integer tipoMovimiento = 0;
 			if(peticion.getCuentaAdquiriente().getSubtipoCuenta().toUpperCase().contains("AHORR")) {
 				tipoMovimiento = 0;
 			}else if(peticion.getCuentaAdquiriente().getSubtipoCuenta().toUpperCase().contains("CRED")) {
 				tipoMovimiento = 1;
 			}
-		
-		log.info("Generando Transferencia....................");
 		ResponseTransferencia responseTx = capaTransferencias.generarTransferencia(peticion,1,tipoMovimiento);
 		
-		if(responseTx.getFolioAutorizacion() != null) {
-			return new ResponseEntity<>(responseTx,HttpStatus.OK);
+		if(responseTx.getCodigo().equals("200") && responseTx.getFolioAutorizacion() != null) {
+			return new ResponseEntity<>(responseTx,HttpStatus.CREATED);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			ResponseError responseError = new ResponseError();
+			responseError.setCodigo(responseTx.getCodigo());
+			responseError.setMensajeUsuario(responseTx.getMensajeUsuario());
+			if(responseError.getCodigo().equals("409")) {
+				responseError.setCodigo("App-"+responseError.getCodigo()+".AppN-M");
+				return new ResponseEntity<>(responseError,HttpStatus.CONFLICT);	
+			}else {
+				responseError.setCodigo("App-"+responseError.getCodigo()+".AppN-M");
+				responseError.setMensajeUsuario("Error interno en el servidor");
+				return new ResponseEntity<>(responseError,HttpStatus.INTERNAL_SERVER_ERROR);
+			}		
+		}
+	}
+	
+	@PostMapping(value="a-terceros")
+	public ResponseEntity<?> aTerceros(@RequestBody RequestTransferencia peticion) {
+		log.info("................Accediendo a transferencia terceros dentro de la entidad...............");
+		Integer tipoMovimiento = 0;
+			if(peticion.getCuentaAdquiriente().getSubtipoCuenta().toUpperCase().contains("AHORR")) {
+				tipoMovimiento = 0;
+			}else if(peticion.getCuentaAdquiriente().getSubtipoCuenta().toUpperCase().contains("CRED")) {
+				tipoMovimiento = 1;
+			}
+		ResponseTransferencia responseTx = capaTransferencias.generarTransferencia(peticion,2,tipoMovimiento);
+		
+		if(responseTx.getCodigo().equals("200") || responseTx.getFolioAutorizacion() != null) {
+			return new ResponseEntity<>(responseTx,HttpStatus.CREATED);
+		}else {
+			ResponseError responseError = new ResponseError();
+			responseError.setCodigo(responseTx.getCodigo());
+			responseError.setMensajeUsuario(responseTx.getMensajeUsuario());
+			if(responseError.getCodigo().equals("409")) {
+				responseError.setCodigo("App-"+responseError.getCodigo()+".AppN-M");
+				return new ResponseEntity<>(responseError,HttpStatus.CONFLICT);	
+			}else {
+				responseError.setCodigo("App-"+responseError.getCodigo()+".AppN-M");
+				responseError.setMensajeUsuario("Error interno en el servidor");
+				return new ResponseEntity<>(responseError,HttpStatus.INTERNAL_SERVER_ERROR);
+			}	
 		}
 	}
    

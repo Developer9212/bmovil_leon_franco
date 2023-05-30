@@ -4,6 +4,3 @@ INSERT INTO tablas(idtabla,idelemento,nombre,dato1,dato2)VALUES('banca_movil','u
 
 DELETE FROM tablas WHERE idtabla='banca_movil' AND idelemento = 'usuario';
 INSERT INTO tablas(idtabla,idelemento,nombre,dato1)VALUES('banca_movil','usuario','Usuario para operar banca movil','999');
-
-DELETE FROM tablas WHERE idtabla='banca_movil' AND idelemento='productos_retiro';
-INSERT INTO tablas(idtabla,idelemento,nombre,dato2)VALUES('banca_movil','productos_retiro','Productos que aceptan retiros','110|111|130');

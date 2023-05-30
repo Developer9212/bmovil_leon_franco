@@ -9,16 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Movimiento implements Serializable {
-	
-	private String id;
-	private String tipo;
-	private String fechaTransaccion;
-	private String fechaPublicacion;
-	private Double monto;
-	private String descripcion;
-	
-	
+public class ResponseError implements Serializable{
+    
+	private String codigo;
+	private String mensajeUsuario;
+    
 	private static final long serialVersionUID = 1L;
-
 }
