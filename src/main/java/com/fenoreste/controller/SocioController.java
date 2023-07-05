@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fenoreste.modelos.ResponseCuentaPrincipal;
+import com.fenoreste.modelos.ResponseError;
 import com.fenoreste.modelos.ResponseSocio;
-import com.fenoreste.service.CapaSocio;
+import com.fenoreste.service.CapaSocioService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SocioController {
 
 	@Autowired
-	private CapaSocio capaSocioService;
+	private CapaSocioService capaSocioService;
 	
 	@GetMapping("/{numeroSocio}")
 	public ResponseEntity<?> buscarSocio(@PathVariable("numeroSocio") String numeroSocio) {
@@ -33,7 +34,19 @@ public class SocioController {
 		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+			ResponseError error = new ResponseError();
+			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+			error.setMensajeUsuario(response.getMensaje());
+			if(response.getCodigo() == 404) {
+				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+			}else if(response.getCodigo() == 409) {
+				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			}else if(response.getCodigo() == 500) {
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+			}else {
+				log.info("Codigo de errror invalido:"+response.getCodigo());
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 	
@@ -44,10 +57,22 @@ public class SocioController {
 			  									@RequestParam(name="limit") int limit) {
 		log.info("Iniciando..................");
 		ResponseCuentaPrincipal response = capaSocioService.buscarSocioCuentas(numeroSocio, tipo, offset, limit);
-		if(response.getCuentas().size() > 0) {
+		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+			ResponseError error = new ResponseError();
+			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+			error.setMensajeUsuario(response.getMensaje());
+			if(response.getCodigo() == 404) {
+				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+			}else if(response.getCodigo() == 409) {
+				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			}else if(response.getCodigo() == 500) {
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+			}else {
+				log.info("Codigo de errror invalido:"+response.getCodigo());
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 	

@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class CapaTransferencias {
+public class CapaTransferenciaService {
 
 	@Autowired
 	private HerramientasUtil herramientasUtil;
@@ -61,7 +61,7 @@ public class CapaTransferencias {
 			Integer tipoMovimiento) {// tipoTransferencia=0->Entre cuentas propias,1->terceros ----- TipoMov =0->
 		// movimiento captacion,1->pago de prestamos
 		ResponseTransferencia responseTx = new ResponseTransferencia();	
-		responseTx.setCodigo("500");
+		responseTx.setCodigo(500);
 		try {
 			// Buscamos la persona emisor
 			Ogs ogs_emisor = null;
@@ -96,12 +96,10 @@ public class CapaTransferencias {
 											.getImporte()) {
 								MovimientoPasoPK pk_paso = null;
 								opa = herramientasUtil.opa(requestTx.getCuentaAdquiriente().getNumeroCuenta());
-								auxiliar_pk = new AuxiliarPK(opa.getIdorigenp(), opa.getIdproducto(),
-										opa.getIdauxiliar());
+								auxiliar_pk = new AuxiliarPK(opa.getIdorigenp(), opa.getIdproducto(),opa.getIdauxiliar());
 								auxiliar_receptor = auxiliarService.buscarPorId(auxiliar_pk);
 								if (auxiliar_receptor != null) {
-									producto_receptor = productoService
-											.buscarPorId(auxiliar_receptor.getPk().getIdproducto());
+									producto_receptor = productoService.buscarPorId(auxiliar_receptor.getPk().getIdproducto());
 									productoBanca = productoBancaService.buscarPorId(producto_receptor.getIdproducto());
 									if (productoBanca != null) {
 										if (productoBanca.isDeposito()) {
@@ -109,9 +107,8 @@ public class CapaTransferencias {
 											Tabla tb_usuario_banca = tablaService.buscarPorId(tb_pk);
 											Origen matriz = origenService.origenMatriz();
 											DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-											String fecha_parseda = herramientasUtil
-													.convertFechaDate(matriz.getFechatrabajo()).replace("T", " ");
-											LocalDateTime localDate = LocalDateTime.parse(fecha_parseda, dtf);
+											String fecha_parseda = herramientasUtil.convertFechaDate(matriz.getFechatrabajo());
+											LocalDateTime localDate = LocalDateTime.parse(fecha_parseda+" "+herramientasUtil.convertFechaDateHora(new Date()), dtf);
 											Timestamp fecha_transferencia = Timestamp.valueOf(localDate);
 											String sai_auxiliar = funcionService.sai_auxiliar(auxiliar_pk);
 											MovimientoPaso movimientoPaso = new MovimientoPaso();
@@ -220,7 +217,7 @@ public class CapaTransferencias {
 
 												} else {
 													log.info("......Cuentas no pertenecen al mismo socio......");	
-													responseTx.setCodigo("409");
+													responseTx.setCodigo(409);
 													responseTx.setMensajeUsuario("Cuentas no pertenecen al mismo socio");
 												}
 
@@ -339,7 +336,7 @@ public class CapaTransferencias {
 													break;
 
 												} else {
-													responseTx.setCodigo("409");
+													responseTx.setCodigo(409);
 													responseTx.setMensajeUsuario("Numero de socio iguales deberia ser transferencia entre cuentas propias");
 													log.info(".....Socio es el mismo,deberia ser transferencia a cuenta propia......");
 												}
@@ -368,57 +365,58 @@ public class CapaTransferencias {
 													registro.setFechaRegistro(
 															requestTx.getRegistro().getFechaSolicitud());
 													responseTx.setRegistro(registro);
-													responseTx.setCodigo("200");
+													responseTx.setCodigo(200);
 												}
 											}
 
 										} else {
-											responseTx.setCodigo("409");
+											responseTx.setCodigo(409);
 											responseTx.setMensajeUsuario("Producto receptor no acepta depositos");
 											log.info("......Producto receptor no acepta depositos......");
 										}
 									} else {
-										responseTx.setCodigo("409");
+										responseTx.setCodigo(409);
 										responseTx.setMensajeUsuario("Producto receptor no opera para banca movil");
 										log.info(".......Producto receptor no opera banca movil.......");
 									}
 								} else {
-									responseTx.setCodigo("409");
+									responseTx.setCodigo(409);
 									responseTx.setMensajeUsuario("Cuenta receptora no existe");
 									log.info("..........Cuenta receptora no existe..........");
 								}
 							} else {
-								responseTx.setCodigo("409");
+								responseTx.setCodigo(409);
 								responseTx.setMensajeUsuario("Saldo insuficiente para completar la transaccion");
 								log.info("......Saldo insuficiente para completar la transaccion......");
 							}
 						} else {
-							responseTx.setCodigo("409");
+							responseTx.setCodigo(409);
 							responseTx.setMensajeUsuario("Producto emisor no acepta retiros");
 							log.info("......Producto emisor no acepta retiros......");
 						}
 					} else {
-						responseTx.setCodigo("409");
+						responseTx.setCodigo(409);
 						responseTx.setMensajeUsuario("No existe cuenta emisora");
 						log.info("......No existe cuenta emisora......");
 					}
 				} else {
-					responseTx.setCodigo("409");
+					responseTx.setCodigo(409);
 					responseTx.setMensajeUsuario("Producto no opera banca movil");
 					log.info(".......Producto no opera banca movil.......");
 				}
 			} else {
-				responseTx.setCodigo("409");
+				responseTx.setCodigo(409);
 				responseTx.setMensajeUsuario("Socio no existe");
 				log.info(".......Socio no existe.......");
 			}
 
 		} catch (Exception e) {
 			if(responseTx.getMensajeUsuario().equals("")) {
-				responseTx.setCodigo("500");
+				responseTx.setCodigo(500);
 				responseTx.setMensajeUsuario("Error interno en el servidor");					
 			}
 			log.info("Error al generar transferencia..." + e.getMessage());
+			return responseTx;
 		}
 
 		return responseTx;

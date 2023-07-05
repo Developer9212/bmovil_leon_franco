@@ -18,7 +18,11 @@ public class HerramientasUtil {
 			ogs.setIdgrupo(Integer.parseInt(customerId.substring(6, 8)));
 			ogs.setIdsocio(Integer.parseInt(customerId.substring(8, 14)));	
 		} catch (Exception e) {
+			ogs.setIdorigen(0);
+			ogs.setIdgrupo(0);
+			ogs.setIdsocio(0);
 			System.out.println("Error al convertir formato ogs:"+e.getMessage());
+			return ogs;
 		}
 		return ogs;
 	}

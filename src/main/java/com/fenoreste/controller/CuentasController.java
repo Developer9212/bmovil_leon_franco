@@ -37,7 +37,16 @@ public class CuentasController {
 			ResponseError error = new ResponseError();
 			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
 			error.setMensajeUsuario(response.getMensaje());
-			return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			if(response.getCodigo() == 404) {
+				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+			}else if(response.getCodigo() == 409) {
+				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			}else if(response.getCodigo() == 500) {
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+			}else {
+				log.info("Codigo de errror invalido:"+response.getCodigo());
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 	
@@ -46,10 +55,22 @@ public class CuentasController {
 												 @RequestParam("subtipoCuenta") String tipoCuenta) {
 		ResponseCuenta response = capaCuentaService.detalleCuentaColocacion(numeroCuenta,tipoCuenta);
 		log.info("Accediendo a detalles cuenta colocacion....................");
-		if(response.getNumeroCuenta() != null) {
+		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			ResponseError error = new ResponseError();
+			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+			error.setMensajeUsuario(response.getMensaje());
+			if(response.getCodigo() == 404) {
+				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+			}else if(response.getCodigo() == 409) {
+				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			}else if(response.getCodigo() == 500) {
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+			}else {
+				log.info("Codigo de errror invalido:"+response.getCodigo());
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 	
@@ -62,10 +83,22 @@ public class CuentasController {
 													 @RequestParam("limit") int limit) {
 		ResponseMovimientos response = capaCuentaService.movimientosCuenta(numeroCuenta,tipo,fechaInicio,fechaFin,inicio,limit);
 		log.info("Accediendo a movimientos cuenta....................");
-		if(response.getNumeroCuenta() != null) {
+		if(response.getCodigo() == 200) {
 			return new ResponseEntity<>(response,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+			ResponseError error = new ResponseError();
+			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+			error.setMensajeUsuario(response.getMensaje());
+			if(response.getCodigo() == 404) {
+				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+			}else if(response.getCodigo() == 409) {
+				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+			}else if(response.getCodigo() == 500) {
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+			}else {
+				log.info("Codigo de errror invalido:"+response.getCodigo());
+				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 }

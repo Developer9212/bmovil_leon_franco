@@ -13,6 +13,7 @@ public interface IAuxiliarService {
 
 	public Auxiliar buscarPorId(AuxiliarPK pk);
 	public Auxiliar buscarPorOgsIdproductoSocial(Integer idorigen,Integer idgrupo,Integer idsocio);
+	public Auxiliar buscarPorOgsIdproducto(Integer idorigen,Integer idgrupo,Integer idsocio,Integer idproducto);
 	public Date fechaVencimientoAmortizacion(AuxiliarPK pk);
 	public List<Auxiliar> listaAhorros(PersonaPK pk,Pageable pageable);
 	public List<Auxiliar> listaInversiones(PersonaPK pk,Pageable pageable);

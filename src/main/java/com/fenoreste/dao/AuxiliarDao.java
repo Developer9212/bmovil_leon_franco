@@ -13,27 +13,30 @@ import com.fenoreste.entity.AuxiliarPK;
 public interface AuxiliarDao extends JpaRepository<Auxiliar, AuxiliarPK>{
      
 	@Query(value = "SELECT * FROM auxiliares WHERE idorigen=?1 AND idgrupo=?2 AND idsocio=?3 AND idproducto=100",nativeQuery = true)
-	Auxiliar buscarPorOGSIdproductoSocial(Integer idorigen,Integer idgrupo,Integer idsocio);
+	public Auxiliar buscarPorOGSIdproductoSocial(Integer idorigen,Integer idgrupo,Integer idsocio);
 	
 	@Query(value = "SELECT * FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=0 AND a.estatus=2",nativeQuery = true)
-	List<Auxiliar>listaAhorrosActivos(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
+	public List<Auxiliar>listaAhorrosActivos(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
 	
 	@Query(value = "SELECT a.* FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3	AND p.tipoproducto=1 AND a.estatus=2",nativeQuery = true)
-    List<Auxiliar>listaInversiones(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
+    public List<Auxiliar>listaInversiones(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
 	
 	@Query(value = "SELECT a.* FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=2 AND a.estatus=2",nativeQuery = true)
-    List<Auxiliar>listaPrestamosActivos(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
+    public List<Auxiliar>listaPrestamosActivos(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
 
 	@Query(value="SELECT (DATE(a.fechaactivacion + int4(a.plazo)))  FROM auxiliares a WHERE idorigenp=?1 AND idproducto=?2 AND idauxiliar=?3",nativeQuery = true)
-	Date fechaVencimientoAmortizacion(Integer idorigenp,Integer idproducto,Integer idauxiliar);
+	public Date fechaVencimientoAmortizacion(Integer idorigenp,Integer idproducto,Integer idauxiliar);
 	
 	@Query(value = "SELECT count(*) FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=0 AND a.estatus=2",nativeQuery = true)
-    Integer contadorAhorros(Integer idorigen,Integer idgrupo,Integer idsocio);
+    public Integer contadorAhorros(Integer idorigen,Integer idgrupo,Integer idsocio);
 	
 	@Query(value = "SELECT count(*) FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=1 AND a.estatus=2",nativeQuery = true)
-    Integer contadorInversiones(Integer idorigen,Integer idgrupo,Integer idsocio);
+    public Integer contadorInversiones(Integer idorigen,Integer idgrupo,Integer idsocio);
 	
 	@Query(value = "SELECT count(*) FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=2 AND a.estatus=2",nativeQuery = true)
-    Integer contadorCreditos(Integer idorigen,Integer idgrupo,Integer idsocio);
+    public Integer contadorCreditos(Integer idorigen,Integer idgrupo,Integer idsocio);
+	
+	@Query(value = "SELECT * FROM auxiliares WHERE idorigen = ?1 AND idgrupo = ?2 AND idsocio = ?3 AND idproducto = ?4",nativeQuery = true)
+	public Auxiliar buscarProductoSpei(Integer idOrigen,Integer idGrupo,Integer idSocio,Integer idProducto);
 	
 }

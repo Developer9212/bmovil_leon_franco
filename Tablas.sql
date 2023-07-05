@@ -15,14 +15,11 @@ CREATE table productos_banca_movil(
 
 );
 
-
-INSERT INTO productos_banca_movil VALUES(111,0,'AHORRO ADICIONAL',true,true,false);
 INSERT INTO productos_banca_movil VALUES(131,0,'AHORRO CUENTA CONFIANZA',true,true,false);
 INSERT INTO productos_banca_movil VALUES(130,0,'AHORRO CUENTA CORRIENTE',true,true,false);
-INSERT INTO productos_banca_movil VALUES(110,0,'AHORRO ADULTO',true,true,false);
 INSERT INTO productos_banca_movil VALUES(170,0,'AHORRO JOVEN',true,true,false);
 INSERT INTO productos_banca_movil VALUES(111,0,'AHORRO ADICIONAL',true,true,false);
-INSERT INTO productos_banca_movil VALUES(110,0,'AHORRO ADULTO',true,true,false)
+INSERT INTO productos_banca_movil VALUES(110,0,'AHORRO ADULTO',true,true,false);
 INSERT INTO productos_banca_movil VALUES(202,1,'Deposito a plazo 90 dias',true,false,false);
 INSERT INTO productos_banca_movil VALUES(203,1,'Deposito a plazo fijo 180 dias',true,false,false);
 INSERT INTO productos_banca_movil VALUES(201,1,'Deposito a Plazo 60 dias',true,false,false);
@@ -88,3 +85,20 @@ INSERT INTO productos_banca_movil VALUES(30902,2,'PRESTAMO MAXIMO ESPECIAL',true
 INSERT INTO productos_banca_movil VALUES(32202,2,'CREDIJOVEN',true,true,false);
 INSERT INTO productos_banca_movil VALUES(31612,2,'PRESTAMO APOYO COVID-19',true,true,false);
 INSERT INTO productos_banca_movil VALUES(30502,2,'PRESTAMO ADICIONAL',true,true,false);
+
+
+DROP table IF EXISTS ws_clabe_respuesta_alianza;
+CREATE table ws_clabe_respuesta_alianza(
+    idoperacion integer,
+    descripcion varchar(45),
+    fecha timestamp,
+    clabe varchar(45),
+    idorigenp integer,
+    idproducto integer,
+    idauxiliar integer,
+    codigohttp integer,
+    mensajerespuesta text
+);
+
+
+

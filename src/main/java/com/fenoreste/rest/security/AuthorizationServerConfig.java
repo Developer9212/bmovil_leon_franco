@@ -43,7 +43,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		.secret(bCryptPasswordEncoder.encode(tbSecurity.getDato2()))
 		.authorizedGrantTypes("password", "refresh_token")
 		.scopes("read", "write")
-		.accessTokenValiditySeconds(2000)
+		.accessTokenValiditySeconds(100)
 		.refreshTokenValiditySeconds(2000);
 	}
 	

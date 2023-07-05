@@ -106,6 +106,10 @@ public class Persona implements Serializable{
     private Boolean curpValido;
     @Column(name = "idcolonia")
     private Integer idcolonia;
+    @Column(name = "tipo_idoficial")
+    private Integer idOficial;
+    @Column(name = "clave_idoficial")
+    private String claveOficial;
      
     private static final long serialVersionUID = 1L;
     

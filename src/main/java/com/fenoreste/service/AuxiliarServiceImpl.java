@@ -67,4 +67,9 @@ public class AuxiliarServiceImpl implements IAuxiliarService{
 		return conta;
 	}
 
+	@Override
+	public Auxiliar buscarPorOgsIdproducto(Integer idorigen, Integer idgrupo, Integer idsocio, Integer idproducto) {
+		return auxiliarDao.buscarProductoSpei(idorigen,idgrupo,idsocio,idproducto);
+	}
+
 }
