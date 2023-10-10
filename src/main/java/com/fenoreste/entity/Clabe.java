@@ -10,7 +10,7 @@ import lombok.Data;
 @Entity
 @Table(name = "ws_siscoop_clabe")
 @Data
-public class Ws_siscoop_clabe {
+public class Clabe {
      
 	 @Id
 	 private String clabe;

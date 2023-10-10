@@ -14,6 +14,7 @@ import com.fenoreste.modelos.ResponseCuenta;
 import com.fenoreste.modelos.ResponseError;
 import com.fenoreste.modelos.ResponseMovimientos;
 import com.fenoreste.service.CapaCuentaService;
+import com.fenoreste.service.IFuncionService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,53 +26,71 @@ public class CuentasController {
 	
 	@Autowired
 	private CapaCuentaService capaCuentaService;
+	@Autowired
+	private IFuncionService funcionService;
 
 	@GetMapping(value="cuentas-captacion/{numeroCuenta}",params = {"subtipoCuenta"})
 	public ResponseEntity<?> buscarCuentaCaptacion(@PathVariable("numeroCuenta") String numeroCuenta,
 												   @RequestParam("subtipoCuenta") String tipoCuenta) {
 		log.info("Accediendo a detalles cuenta captacion....................");
-		ResponseCuenta response = capaCuentaService.detalleCuentaCaptacion(numeroCuenta,tipoCuenta);		
-		if(response.getCodigo() == 200) {
-			return new ResponseEntity<>(response,HttpStatus.OK);
-		}else {
-			ResponseError error = new ResponseError();
-			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
-			error.setMensajeUsuario(response.getMensaje());
-			if(response.getCodigo() == 404) {
-				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
-			}else if(response.getCodigo() == 409) {
-				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
-			}else if(response.getCodigo() == 500) {
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+		ResponseError error = new ResponseError();
+		if(funcionService.horaActividad()) {
+			ResponseCuenta response = capaCuentaService.detalleCuentaCaptacion(numeroCuenta,tipoCuenta);		
+			if(response.getCodigo() == 200) {
+				return new ResponseEntity<>(response,HttpStatus.OK);
 			}else {
-				log.info("Codigo de errror invalido:"+response.getCodigo());
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+				error.setMensajeUsuario(response.getMensaje());
+				if(response.getCodigo() == 404) {
+					return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+				}else if(response.getCodigo() == 409) {
+					return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+				}else if(response.getCodigo() == 500) {
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+				}else {
+					log.info("Codigo de errror invalido:"+response.getCodigo());
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				}
 			}
+		}else {
+			error = new ResponseError();
+			error.setCodigo("App-"+409+".AppN-M");
+			error.setMensajeUsuario("VERIFIQUE SU HORARIO DE ACTIVIDAD DIA,HORA O CONTACTE A SU PROVEEDOR...");
+			return new ResponseEntity<>(error,HttpStatus.CONFLICT);	
 		}
+		
 	}
 	
 	@GetMapping(value="cuentas-credito/{numeroCuenta}",params = {"subtipoCuenta"})
 	public ResponseEntity<?> buscarCuentaCredito(@PathVariable("numeroCuenta") String numeroCuenta,
 												 @RequestParam("subtipoCuenta") String tipoCuenta) {
-		ResponseCuenta response = capaCuentaService.detalleCuentaColocacion(numeroCuenta,tipoCuenta);
-		log.info("Accediendo a detalles cuenta colocacion....................");
-		if(response.getCodigo() == 200) {
-			return new ResponseEntity<>(response,HttpStatus.OK);
-		}else {
-			ResponseError error = new ResponseError();
-			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
-			error.setMensajeUsuario(response.getMensaje());
-			if(response.getCodigo() == 404) {
-				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
-			}else if(response.getCodigo() == 409) {
-				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
-			}else if(response.getCodigo() == 500) {
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+		ResponseError error = new ResponseError();
+		if(funcionService.horaActividad()) {
+			ResponseCuenta response = capaCuentaService.detalleCuentaColocacion(numeroCuenta,tipoCuenta);
+			log.info("Accediendo a detalles cuenta colocacion....................");
+			if(response.getCodigo() == 200) {
+				return new ResponseEntity<>(response,HttpStatus.OK);
 			}else {
-				log.info("Codigo de errror invalido:"+response.getCodigo());
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+				error.setMensajeUsuario(response.getMensaje());
+				if(response.getCodigo() == 404) {
+					return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+				}else if(response.getCodigo() == 409) {
+					return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+				}else if(response.getCodigo() == 500) {
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+				}else {
+					log.info("Codigo de errror invalido:"+response.getCodigo());
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				}
 			}
+		}else {
+			error = new ResponseError();
+			error.setCodigo("App-"+409+".AppN-M");
+			error.setMensajeUsuario("VERIFIQUE SU HORARIO DE ACTIVIDAD DIA,HORA O CONTACTE A SU PROVEEDOR...");
+			return new ResponseEntity<>(error,HttpStatus.CONFLICT);
 		}
+		
 	}
 	
 	@GetMapping(value="cuentas/{numeroCuenta}/movimientos",params = {"subtipo"})
@@ -81,24 +100,33 @@ public class CuentasController {
 													 @RequestParam("fechaFin") String fechaFin,
 													 @RequestParam("offset") int inicio,
 													 @RequestParam("limit") int limit) {
-		ResponseMovimientos response = capaCuentaService.movimientosCuenta(numeroCuenta,tipo,fechaInicio,fechaFin,inicio,limit);
-		log.info("Accediendo a movimientos cuenta....................");
-		if(response.getCodigo() == 200) {
-			return new ResponseEntity<>(response,HttpStatus.OK);
-		}else {
-			ResponseError error = new ResponseError();
-			error.setCodigo("App-"+response.getCodigo()+".AppN-M");
-			error.setMensajeUsuario(response.getMensaje());
-			if(response.getCodigo() == 404) {
-				return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
-			}else if(response.getCodigo() == 409) {
-				return new ResponseEntity<>(error,HttpStatus.CONFLICT);
-			}else if(response.getCodigo() == 500) {
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+		ResponseError error = new ResponseError();
+		if(funcionService.horaActividad()) {
+			ResponseMovimientos response = capaCuentaService.movimientosCuenta(numeroCuenta,tipo,fechaInicio,fechaFin,inicio,limit);
+			log.info("Accediendo a movimientos cuenta....................");
+			if(response.getCodigo() == 200) {
+				return new ResponseEntity<>(response,HttpStatus.OK);
 			}else {
-				log.info("Codigo de errror invalido:"+response.getCodigo());
-				return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				
+				error.setCodigo("App-"+response.getCodigo()+".AppN-M");
+				error.setMensajeUsuario(response.getMensaje());
+				if(response.getCodigo() == 404) {
+					return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
+				}else if(response.getCodigo() == 409) {
+					return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+				}else if(response.getCodigo() == 500) {
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);	
+				}else {
+					log.info("Codigo de errror invalido:"+response.getCodigo());
+					return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+				}
 			}
+		}else {
+			error = new ResponseError();
+			error.setCodigo("App-"+409+".AppN-M");
+			error.setMensajeUsuario("VERIFIQUE SU HORARIO DE ACTIVIDAD DIA,HORA O CONTACTE A SU PROVEEDOR...");
+			return new ResponseEntity<>(error,HttpStatus.CONFLICT);
 		}
+		
 	}
 }

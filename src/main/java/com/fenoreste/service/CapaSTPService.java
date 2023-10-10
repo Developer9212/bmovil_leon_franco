@@ -22,8 +22,8 @@ import com.fenoreste.entity.TablaPK;
 import com.fenoreste.entity.Trabajo;
 import com.fenoreste.entity.WsClabeRespuestaAlianzaPK;
 import com.fenoreste.entity.Ws_clabe_respuesta_alianza;
-import com.fenoreste.entity.Ws_siscoop_Clabe_interbancaria;
-import com.fenoreste.entity.Ws_siscoop_clabe;
+import com.fenoreste.entity.ClabeInterbancaria;
+import com.fenoreste.entity.Clabe;
 import com.fenoreste.utilidades.HerramientasUtil;
 import com.fenoreste.utilidades.Ogs;
 
@@ -64,8 +64,9 @@ public class CapaSTPService {
 	@Autowired
 	private IWsClabeRespuestaAlianzaService wsClabeRespuestaAlianzaService;
 
-	public void altaClabe(String socio) {
+	public Ws_clabe_respuesta_alianza altaClabe(String socio) {
 		personaFisicaModel modelPF = new personaFisicaModel();
+		Ws_clabe_respuesta_alianza ws_clabe_respuesta_alianza = new Ws_clabe_respuesta_alianza();
 		try {
 			Ogs ogs = herramientasUtil.ogs(socio);
 			PersonaPK personaPk = new PersonaPK(ogs.getIdorigen(), ogs.getIdgrupo(), ogs.getIdsocio());
@@ -76,10 +77,10 @@ public class CapaSTPService {
 				Auxiliar auxiliar = auxiliarService.buscarPorOgsIdproducto(persona.getPk().getIdorigen(),persona.getPk().getIdgrupo(), persona.getPk().getIdsocio(),Integer.parseInt(tbSpei.getDato2()));
 				if (auxiliar != null) {
 					//Buscamos registros de clabe Interbancaria
-					Ws_siscoop_Clabe_interbancaria clabeInterbancaria = clabeInterbancariaService.buscarPorId(auxiliar.getPk());
+					ClabeInterbancaria clabeInterbancaria = clabeInterbancariaService.buscarPorId(auxiliar.getPk());
 					if(clabeInterbancaria != null) {
 						//Buscamos detalles de clabe
-						Ws_siscoop_clabe detalleClabe = clabeService.buscarPorId(clabeInterbancaria.getClabe());
+						Clabe detalleClabe = clabeService.buscarPorId(clabeInterbancaria.getClabe());
 						if(detalleClabe != null) {
 							modelPF.setNumeroSocio(socio);
 							modelPF.setNombre(persona.getNombre());
@@ -112,10 +113,11 @@ public class CapaSTPService {
 							modelPF.setClaveElector(persona.getClaveOficial());
 							Pais pais = paisService.buscarPorId(estado.getIdpais());
 							
-							modelPF.setPaisNacimiento(pais.getNombre().toUpperCase().substring(0,2));
+							modelPF.setPaisNacimiento(pais.getNombre().toUpperCase().substring(0,3));
+							log.info("json formado:"+modelPF);
 							String[] resultadoAlta= speiClient.altaClabe(modelPF);
 							
-							Ws_clabe_respuesta_alianza ws_clabe_respuesta_alianza = new Ws_clabe_respuesta_alianza();
+							
 							WsClabeRespuestaAlianzaPK pkClabeAlianza = new WsClabeRespuestaAlianzaPK(1,clabeInterbancaria.getClabe(), auxiliar.getPk().getIdorigenp(), auxiliar.getPk().getIdproducto(),auxiliar.getPk().getIdauxiliar());
                             ws_clabe_respuesta_alianza.setPk(pkClabeAlianza);
                             ws_clabe_respuesta_alianza.setCodigohttp(Integer.parseInt(resultadoAlta[0]));
@@ -139,6 +141,6 @@ public class CapaSTPService {
 		} catch (Exception e) {
 			log.info(":::::::::::::::::Error al dar de alta clabe::::::::::::::::::..."+e.getMessage());
 		}
-
+       return ws_clabe_respuesta_alianza;    		   
 	}
 }

@@ -14,9 +14,12 @@ import com.fenoreste.entity.Amortizacion;
 import com.fenoreste.entity.Auxiliar;
 import com.fenoreste.entity.AuxiliarD;
 import com.fenoreste.entity.AuxiliarPK;
+import com.fenoreste.entity.ClabeInterbancaria;
 import com.fenoreste.entity.Persona;
 import com.fenoreste.entity.PersonaPK;
 import com.fenoreste.entity.Producto;
+import com.fenoreste.entity.Tabla;
+import com.fenoreste.entity.TablaPK;
 import com.fenoreste.modelos.Movimiento;
 import com.fenoreste.modelos.ResponseCredito;
 import com.fenoreste.modelos.ResponseCuenta;
@@ -59,6 +62,11 @@ public class CapaCuentaService {
 	@Autowired
 	private IAmortizacionService amortizacionService;
 	
+	@Autowired
+	private ITablaService tablaService;
+	
+	@Autowired
+	private IClabeInterbancariaService clabeInterbancariaService;
 
 	public ResponseCuenta detalleCuentaCaptacion(String opaBase,String tipoCuenta) {
 		log.info("Llegando a detalles captacion.....");
@@ -76,10 +84,22 @@ public class CapaCuentaService {
 						Producto producto = productoService.buscarPorId(cuenta_eje.getPk().getIdproducto());
 						ResponseProducto responseProducto = new ResponseProducto();
 						ResponseSaldo res_saldo = null;
+						TablaPK pkClabeStp = new TablaPK("banca_movil","producto_clabe");
+						Tabla tbStp = tablaService.buscarPorId(pkClabeStp);
 						List<ResponseSaldo>saldos = new ArrayList<>();
 						switch (producto.getTipoproducto()) {
 						case 0:
 							if(tipoCuenta.equals("AHORRO")) {
+								if(Integer.parseInt(tbStp.getDato1()) == cuenta_eje.getPk().getIdproducto()) {
+									  log.info("Si accedio a buscar clabe");
+									  //Aqui buscamos la clabe en ClabeInterbancaria
+									  ClabeInterbancaria clabe_interbancaria = clabeInterbancariaService.buscarPorId(cuenta_eje.getPk());
+									  log.info("La clabe interbancaria es:"+clabe_interbancaria.getClabe());
+									  if(clabe_interbancaria != null) {
+										  log.info("Se seteo la clabe");
+										  response.setClabe(clabe_interbancaria.getClabe());   
+									  }
+								  }
 								response.setTipoCuenta("PERSONAL");
 								response.setSubtipoCuenta("AHORRO");
 								response.setNivelOperacion("DEPOSITOS_Y_RETIROS");
@@ -135,8 +155,8 @@ public class CapaCuentaService {
 						response.setFechaApertura(util.convertFechaDate(cuenta_eje.getFechaactivacion()).substring(0,10));
 						//Vamos a buscar fecha de ultimo movimiento
 						AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(cuenta_ejePk);
-						response.setFechaUltimoMovimiento(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
-						response.setFechaUltimaNotificacion(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
+						response.setFechaUltimoMovimiento(ultimo_movimiento.getFecha().toString().substring(0,10));
+						response.setFechaUltimaNotificacion(ultimo_movimiento.getFecha().toString().substring(0,10));
 						
 						//Buscamos datos personales del socio
 						PersonaPK personaPk = new PersonaPK(cuenta_eje.getIdorigen(),cuenta_eje.getIdgrupo(),cuenta_eje.getIdsocio());
@@ -144,7 +164,6 @@ public class CapaCuentaService {
 						response.setNumeroSocio(String.format("%06d",persona.getPk().getIdorigen())+persona.getPk().getIdgrupo()+String.format("%06d",personaPk.getIdsocio()));
 						response.setNombreSocio(persona.getNombre()+" "+persona.getAppaterno()+" "+persona.getApmaterno());
 						response.setAlias(producto.getNombre());
-						response.setClabe("");
 						
 						
 						responseProducto.setId(producto.getIdproducto().toString());
@@ -292,8 +311,8 @@ public class CapaCuentaService {
 									response.setFechaApertura(util.convertFechaDate(cuenta_eje.getFechaactivacion()).substring(0,10));
 									//Vamos a buscar fecha de ultimo movimiento
 									AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(cuenta_ejePk);
-									response.setFechaUltimoMovimiento(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
-									response.setFechaUltimaNotificacion(util.convertFechaDate(ultimo_movimiento.getFecha()).substring(0,10));
+									response.setFechaUltimoMovimiento(ultimo_movimiento.getFecha().toString().substring(0,10));
+									response.setFechaUltimaNotificacion(ultimo_movimiento.getFecha().toString().substring(0,10));
 									
 									//Buscamos datos personales del socio
 									PersonaPK personaPk = new PersonaPK(cuenta_eje.getIdorigen(),cuenta_eje.getIdgrupo(),cuenta_eje.getIdsocio());
@@ -359,6 +378,7 @@ public class CapaCuentaService {
                 		 response.setSubtipoCuenta(tipo);
                 		 List<Movimiento>listadoMovimientos = new ArrayList<>();
                 		 List<AuxiliarD>listaAuxiliaresD = auxiliarDService.buscarTodosMovs(auxiliarPK,util.convertFechaString(fechaInicio),util.convertFechaString(fechaFin),PageRequest.of(inicioPage,finPage));
+                		 log.info("Tu lista es:"+listaAuxiliaresD);
                 		 for(int i=0;i<listaAuxiliaresD.size();i++) {
                 			 AuxiliarD mov_ad = listaAuxiliaresD.get(i);
                 			 Movimiento mov = new Movimiento();
@@ -371,9 +391,9 @@ public class CapaCuentaService {
                                   mov.setDescripcion("DEPOSITO"); 
                                   mov.setTipo("DEBITO");
                 			 }
-                			 log.info("fechaaaaaaaaaaaaaaaaaaa.................."+util.convertFechaDateHora(mov_ad.getFecha()));
-                			 mov.setFechaTransaccion(util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
-                			 mov.setFechaPublicacion(util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
+                			 log.info("fechaaaaaaaaaaaaaaaaaaASASa.................." + mov_ad.getFecha().toString().replace(" ","T")+"-06");//+util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha()));
+                			 mov.setFechaTransaccion(mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//.replace(" ","T").replace("-05","-06"));//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
+                			 mov.setFechaPublicacion(mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
                 			 mov.setMonto(mov_ad.getMonto().doubleValue());
                 			 listadoMovimientos.add(mov);
                 		 }

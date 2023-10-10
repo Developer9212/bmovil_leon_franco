@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fenoreste.dao.ClabeDao;
-import com.fenoreste.entity.Ws_siscoop_clabe;
+import com.fenoreste.entity.Clabe;
 
 @Service
 public class ClabeServiceImpl implements IClabeService{
@@ -13,7 +13,7 @@ public class ClabeServiceImpl implements IClabeService{
 	private ClabeDao clabeDao;
 	
 	@Override
-	public Ws_siscoop_clabe buscarPorId(String clabe) {
+	public Clabe buscarPorId(String clabe) {
 		return clabeDao.findById(clabe).orElse(null);
 	}
 

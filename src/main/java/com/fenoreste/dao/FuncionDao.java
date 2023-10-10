@@ -30,5 +30,12 @@ public interface FuncionDao extends JpaRepository<Auxiliar,Integer>{
 	
 	@Query(value ="SELECT sai_bankingly_servicio_activo_inactivo()" , nativeQuery = true)
 	boolean servicios_activos();
+	
+	@Query(value = "SELECT now()",nativeQuery = true)
+	String horaServidor();
+	
+	@Query(value = "SELECT sai_spei_entrada_aplica(?1,?2,?3,?4)", nativeQuery = true)
+	Integer movs_aplicados(Integer idusuario,String sesion,Integer tipopoliza,String referencia);
+	
 }
 

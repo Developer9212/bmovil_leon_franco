@@ -11,9 +11,10 @@ import com.fenoreste.entity.AuxiliarPK;
 
 public interface IAuxiliarDService {
     
+	public AuxiliarD buscarUltimoMovimiento(AuxiliarPK pk,Integer idusuario,Integer idtipo);
 	public AuxiliarD buscarUltimoMovimiento(AuxiliarPK pk);
-	
 	public List<AuxiliarD>buscarTodosMovs(AuxiliarPK pk,Date fechaIni,Date fechaFin,Pageable pageable);
 	
 	public Integer contadorPorFecha(AuxiliarPK pk,Date fechaIni,Date fechaFin);
-}
+	
+	}

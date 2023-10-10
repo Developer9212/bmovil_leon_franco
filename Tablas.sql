@@ -87,18 +87,73 @@ INSERT INTO productos_banca_movil VALUES(31612,2,'PRESTAMO APOYO COVID-19',true,
 INSERT INTO productos_banca_movil VALUES(30502,2,'PRESTAMO ADICIONAL',true,true,false);
 
 
-DROP table IF EXISTS ws_clabe_respuesta_alianza;
-CREATE table ws_clabe_respuesta_alianza(
-    idoperacion integer,
-    descripcion varchar(45),
-    fecha timestamp,
-    clabe varchar(45),
-    idorigenp integer,
-    idproducto integer,
-    idauxiliar integer,
-    codigohttp integer,
-    mensajerespuesta text
+
+
+DROP TABLE IF EXISTS transferencias_banca_movil;
+CREATE TABLE transferencias_banca_movil(
+   
+   foliosolicitante text,
+   fecha timestamp with time zone,
+   socioorigen text,
+   cuentaorigen text,
+   sociodestino text,
+   cuentadestino text,
+   monto numeric,
+   comision numeric default 0.0,
+   polizacreada text,
+   esspei  boolean default false,
+   folioautorizacion text,
+
+   primary key(foliosolicitante,polizacreada)
+
+);
+
+DROP TABLE IF EXISTS transferencias_spei_dispersion;
+CREATE TABLE transferencias_spei_dispersion(
+     foliosolicitante text,
+     folioautorizacion text,
+     claverastreo      text,
+     estadotransaccion text,
+     fechaactualizacion timestamp with time zone,
+     poliza_ajuste  text,
+
+     primary key(foliosolicitante)
 );
 
 
+DROP TABLE IF EXISTS transferencias_spei_abono;
+CREATE TABLE transferencias_spei_abono(
+     foliosolicitante text,
+     claverastreospei    text,
+     ordenante text,
+     descripcion text,
+     clabeordenante text,
+     referencianumerica text,
+     referenciacobranza text,
+     clabebeneficiario text,
+     nombrebeneficiario text,
+     monto numeric,
+     comision numeric, 
+     fechasolicitud text,
+     fechaejecucion timestamp with time zone,
+     aceptada boolean,
+     polizaabono text,
+     polizacomision text,
+
+     primary key(claverastreospei)
+);
+
+DROP TABLE IF EXISTS ws_clabe_respuesta_alianza;
+CREATE TABLE ws_clabe_respuesta_alianza(
+     idoperacion       integer                     ,
+     descripcion       character varying(45)       ,
+     fecha             timestamp without time zone ,
+     clabe             character varying(45)       ,
+     idorigenp         integer                     ,
+     idproducto        integer                     ,
+     idauxiliar        integer                     ,
+     codigohttp        integer                     ,
+     mensajerespuesta  text                        
+
+);
 

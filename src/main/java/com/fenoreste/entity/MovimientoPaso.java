@@ -46,6 +46,11 @@ public class MovimientoPaso implements Serializable {
     private Integer tipo_amort;   
     @Column(name = "sai_aux")
     private String sai_aux;
+    @Column(name = "idorden_spei")
+    private Integer idordenspei;
+    @Column(name ="spei_cancelado")
+    private boolean spei_cancelado;
+    
 
 	private static final long serialVersionUID = 1L;
 

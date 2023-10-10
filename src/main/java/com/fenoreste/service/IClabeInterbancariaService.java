@@ -1,9 +1,10 @@
 package com.fenoreste.service;
 
 import com.fenoreste.entity.AuxiliarPK;
-import com.fenoreste.entity.Ws_siscoop_Clabe_interbancaria;
+import com.fenoreste.entity.ClabeInterbancaria;
 
 public interface IClabeInterbancariaService {
 
-	public Ws_siscoop_Clabe_interbancaria buscarPorId(AuxiliarPK pk);
+	public ClabeInterbancaria buscarPorId(AuxiliarPK pk);
+	public ClabeInterbancaria buscarPorClabe(String clabe);
 }

@@ -43,6 +43,22 @@ public class FuncionServiceImpl implements IFuncionService {
 	public void eliminarRegistrosProcesados(MovimientoPasoPK pk) {
 		funcionDao.sai_bankingly_termina_transaccion(pk.getFecha(),pk.getIdusuario(),pk.getSesion(),pk.getReferencia());
 	}
+	
+	@Override
+	public String horaServidor() {
+		return funcionDao.horaServidor();
+	}
 
+	@Override
+	public Integer aplica_transaccion_spei(Integer idusuario,String sesion,Integer tipopoliza,String referencia) {
+		return funcionDao.movs_aplicados(idusuario,sesion,tipopoliza,referencia);
+	}
+
+	@Override
+	public boolean horaActividad() {
+		return funcionDao.servicios_activos();
+	}
+    
+	
 
 }

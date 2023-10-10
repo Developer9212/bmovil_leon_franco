@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.fenoreste.dao.ClabeInterbancariaDao;
 import com.fenoreste.entity.AuxiliarPK;
-import com.fenoreste.entity.Ws_siscoop_Clabe_interbancaria;
+import com.fenoreste.entity.ClabeInterbancaria;
 
 @Service
 public class ClabeInterbancariaServiceImpl implements IClabeInterbancariaService{
@@ -14,8 +14,13 @@ public class ClabeInterbancariaServiceImpl implements IClabeInterbancariaService
 	private ClabeInterbancariaDao clabeInterbancariaDao;
 	
 	@Override
-	public Ws_siscoop_Clabe_interbancaria buscarPorId(AuxiliarPK pk) {
+	public ClabeInterbancaria buscarPorId(AuxiliarPK pk) {
 		return clabeInterbancariaDao.findById(pk).orElse(null);
+	}
+
+	@Override
+	public ClabeInterbancaria buscarPorClabe(String clabe) {
+		return clabeInterbancariaDao.findByClabe(clabe);
 	}
 
 }

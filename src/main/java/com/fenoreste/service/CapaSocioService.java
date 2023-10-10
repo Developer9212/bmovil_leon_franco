@@ -1,9 +1,7 @@
 package com.fenoreste.service;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,9 @@ import com.fenoreste.entity.MenuPK;
 import com.fenoreste.entity.Persona;
 import com.fenoreste.entity.PersonaPK;
 import com.fenoreste.entity.Producto;
+import com.fenoreste.entity.Tabla;
+import com.fenoreste.entity.TablaPK;
+import com.fenoreste.entity.ClabeInterbancaria;
 import com.fenoreste.modelos.ResponseCredito;
 import com.fenoreste.modelos.ResponseCuenta;
 import com.fenoreste.modelos.ResponseCuentaPrincipal;
@@ -55,14 +56,18 @@ public class CapaSocioService {
 	@Autowired
 	private IAuxiliarDService auxiliarDService;
 	
-	@Autowired
-	private IOrigenService origenService;
 	
 	@Autowired
     private IFuncionService funcionService;	
 	
 	@Autowired
 	private IAmortizacionService amortizacionService;
+	
+	@Autowired
+	private ITablaService tablaService;
+	
+	@Autowired
+	private IClabeInterbancariaService clabeInterbancariaService;
 	
 	@Autowired
 	private HerramientasUtil util;
@@ -130,6 +135,9 @@ public class CapaSocioService {
 				PersonaPK persona_id = new PersonaPK(ogs.getIdorigen(),ogs.getIdgrupo(),ogs.getIdsocio());				
 				Persona persona = personaService.buscarPorId(persona_id);				
 				if(persona.getPk() != null) {			
+					//Buscamos clabe STP
+					TablaPK pkClabeStp = new TablaPK("banca_movil","producto_clabe");
+					Tabla tbStp = tablaService.buscarPorId(pkClabeStp);
 					//Buscamos todos los folios auxilaires activos
 					List<ResponseCuenta>listaCuentas = new ArrayList<>();
 					List<Auxiliar>_Folios = new ArrayList<>();
@@ -165,7 +173,18 @@ public class CapaSocioService {
 									  log.info("Nombre PRPductos:"+p.getNombre().toUpperCase());
 									 
 									  
-									  if(p.getTipoproducto() == 0){						  
+									  if(p.getTipoproducto() == 0){
+										  log.info("El idproducto es:"+a.getPk().getIdproducto());
+										  if(Integer.parseInt(tbStp.getDato1()) == a.getPk().getIdproducto()) {
+											  log.info("Si accedio a buscar clabe");
+											  //Aqui buscamos la clabe en ClabeInterbancaria
+											  ClabeInterbancaria clabe_interbancaria = clabeInterbancariaService.buscarPorId(a.getPk());
+											  log.info("La clabe interbancaria es:"+clabe_interbancaria.getClabe());
+											  if(clabe_interbancaria != null) {
+												  log.info("Se seteo la clabe");
+												  res.setClabe(clabe_interbancaria.getClabe());   
+											  }
+										  }
 										  log.info("Entro como Ahorro");
 										  res.setNumeroSocio(socio);
 										  res.setNombreSocio(persona.getNombre() + " "+ persona.getAppaterno() + " " + persona.getApmaterno());
@@ -198,9 +217,9 @@ public class CapaSocioService {
 										  res.setProducto(res_prod);
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(util.convertFechaDate(ad.getFecha()));
+										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
 										  
-										  res.setClabe("");//String.format("%06d",a.getPk().getIdorigenp())+String.format("%05d",a.getPk().getIdproducto())+String.format("%08d",a.getPk().getIdauxiliar()));  
+										  //res.setClabe("");//String.format("%06d",a.getPk().getIdorigenp())+String.format("%05d",a.getPk().getIdproducto())+String.format("%08d",a.getPk().getIdauxiliar()));  
 										  res.setSaldos(saldos);
 										  listaCuentas.add(res);
 									  }else if(p.getTipoproducto() ==1 ) {
@@ -242,7 +261,7 @@ public class CapaSocioService {
 										  res.setProducto(res_prod);
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(util.convertFechaDate(ad.getFecha()));
+										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
 										  res.setFechaUltimaNotificacion(null);
 										  
 										  inversion_res.setFechaVencimiento(util.convertFechaDate(auxiliarService.fechaVencimientoAmortizacion(a.getPk())).replace("T00:00:00",""));
@@ -276,7 +295,7 @@ public class CapaSocioService {
 										  //Buscamos el monto para liquidar el prestamo
 										  res_saldo = new ResponseSaldo();
 										  res_saldo.setTipo("LIQUIDACION");
-										  res_saldo.setMonto(new Double(funcionService.montoParaLiquidarPrestamo(a.getPk())));
+										  res_saldo.setMonto(Double.parseDouble(funcionService.montoParaLiquidarPrestamo(a.getPk())));
 										  res_saldo.setMoneda("MXN");
 										  
 										  saldos.add(res_saldo);
@@ -337,7 +356,7 @@ public class CapaSocioService {
 										  List<String>lista_detalles_prestamo = Arrays.asList(parametros_prestamo_cuanto);
 										  ResponsePago pago = new ResponsePago();
 										  pago.setFecha(valores_sai.get(8));
-										  pago.setMonto(new Double(lista_detalles_prestamo.get(0)));
+										  pago.setMonto(Double.parseDouble(lista_detalles_prestamo.get(0)));
 										  pago.setMoneda("MXN");
 										  res_credito.setProximoPago(pago);
 										  
@@ -355,7 +374,7 @@ public class CapaSocioService {
 										  
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(util.convertFechaDate(ad.getFecha()));
+										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
 										  res.setFechaUltimaNotificacion(null);
 										  
 										  

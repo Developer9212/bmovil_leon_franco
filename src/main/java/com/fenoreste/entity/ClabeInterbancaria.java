@@ -13,7 +13,7 @@ import lombok.Data;
 @Entity
 @Table(name = "ws_siscoop_clabe_interbancaria")
 @Data
-public class Ws_siscoop_Clabe_interbancaria {
+public class ClabeInterbancaria {
      
 	 @Id
 	 private AuxiliarPK pk; 

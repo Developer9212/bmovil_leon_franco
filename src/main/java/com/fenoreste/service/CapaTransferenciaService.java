@@ -1,5 +1,6 @@
 package com.fenoreste.service;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -9,9 +10,11 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fenoreste.entity.AbonoSpeiPK;
 import com.fenoreste.entity.Auxiliar;
 import com.fenoreste.entity.AuxiliarD;
 import com.fenoreste.entity.AuxiliarPK;
+import com.fenoreste.entity.ClabeInterbancaria;
 import com.fenoreste.entity.MovimientoPaso;
 import com.fenoreste.entity.MovimientoPasoPK;
 import com.fenoreste.entity.Origen;
@@ -19,12 +22,18 @@ import com.fenoreste.entity.Persona;
 import com.fenoreste.entity.PersonaPK;
 import com.fenoreste.entity.Producto;
 import com.fenoreste.entity.ProductoBanca;
+import com.fenoreste.entity.SpeiAbono;
+import com.fenoreste.entity.SpeiDispersion;
+import com.fenoreste.entity.SpeiAbonoPaso;
 import com.fenoreste.entity.Tabla;
 import com.fenoreste.entity.TablaPK;
+import com.fenoreste.entity.Transferencia;
 import com.fenoreste.modelos.RegistroTransaccion;
 import com.fenoreste.modelos.RequestTransferencia;
-import com.fenoreste.modelos.ResponseError;
+import com.fenoreste.modelos.RequestTransferenciaSpei;
+import com.fenoreste.modelos.ResponseActualizacionSpei;
 import com.fenoreste.modelos.ResponseTransferencia;
+import com.fenoreste.modelos.SpeiActualizacion;
 import com.fenoreste.utilidades.HerramientasUtil;
 import com.fenoreste.utilidades.Ogs;
 import com.fenoreste.utilidades.Opa;
@@ -56,6 +65,13 @@ public class CapaTransferenciaService {
 	@Autowired
 	private IAuxiliarDService auxiliarDService;
 	String idtabla = "banca_movil";
+	String idtablaspei = "spei"; 
+	@Autowired
+	private ITransferenciaService transferenciaService;
+	@Autowired
+	private IClabeInterbancariaService clabeInterbancariaService;
+	@Autowired
+	private ISpeiService speiService;
 
 	public ResponseTransferencia generarTransferencia(RequestTransferencia requestTx, Integer tipoTransferencia,
 			Integer tipoMovimiento) {// tipoTransferencia=0->Entre cuentas propias,1->terceros ----- TipoMov =0->
@@ -68,7 +84,7 @@ public class CapaTransferenciaService {
 			Opa opa = null;
 			PersonaPK pk_persona = null;
 			Persona socio_emisor = null;
-			Persona socio_receptor = null;
+			Persona socio_receptor= null;
 			AuxiliarPK auxiliar_pk = null;
 			Auxiliar auxiliar_emisor = null;
 			Auxiliar auxiliar_receptor = null;
@@ -105,13 +121,12 @@ public class CapaTransferenciaService {
 										if (productoBanca.isDeposito()) {
 											TablaPK tb_pk = new TablaPK(idtabla, "usuario");
 											Tabla tb_usuario_banca = tablaService.buscarPorId(tb_pk);
-											Origen matriz = origenService.origenMatriz();
-											DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-											String fecha_parseda = herramientasUtil.convertFechaDate(matriz.getFechatrabajo());
-											LocalDateTime localDate = LocalDateTime.parse(fecha_parseda+" "+herramientasUtil.convertFechaDateHora(new Date()), dtf);
-											Timestamp fecha_transferencia = Timestamp.valueOf(localDate);
 											String sai_auxiliar = funcionService.sai_auxiliar(auxiliar_pk);
 											MovimientoPaso movimientoPaso = new MovimientoPaso();
+											String horaServidorBase = funcionService.horaServidor();
+											
+											Date date = new Date();
+											Timestamp timestamp = new Timestamp(date.getTime());  
 											switch (tipoTransferencia) {
 											case 1:// Entre cuentas
 												if (auxiliar_receptor.getIdorigen().intValue() == ogs_emisor.getIdorigen()
@@ -121,7 +136,7 @@ public class CapaTransferenciaService {
 												switch (producto_receptor.getTipoproducto()) {
 													case 0:// Ahorro
 															// Preparamos el movimiento(cargo)
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -140,7 +155,7 @@ public class CapaTransferenciaService {
 																.guardar(movimientoPaso);
 
 														// Registro movimiento abono
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -169,7 +184,7 @@ public class CapaTransferenciaService {
 
 													case 2:// Pago a prestamos
 															// Preparamos el movimiento(Abono)
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -188,7 +203,7 @@ public class CapaTransferenciaService {
 														movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 
 														// Registro movimiento abono
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -240,7 +255,7 @@ public class CapaTransferenciaService {
 													switch (producto_receptor.getTipoproducto()) {
 													case 0:// Ahorro
 															// Preparamos el movimiento(cargo)
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -259,7 +274,7 @@ public class CapaTransferenciaService {
 																.guardar(movimientoPaso);
 
 														// Registro movimiento abono
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -288,7 +303,7 @@ public class CapaTransferenciaService {
 
 													case 2:// Pago a prestamos
 															// Preparamos el movimiento(Abono)
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -307,7 +322,7 @@ public class CapaTransferenciaService {
 														movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 
 														// Registro movimiento abono
-														pk_paso = new MovimientoPasoPK(fecha_transferencia,
+														pk_paso = new MovimientoPasoPK(timestamp,
 																Integer.parseInt(tb_usuario_banca.getDato1()),
 																funcionService.sesion(),
 																String.valueOf(requestTx.getFolioSolicitante()),
@@ -349,22 +364,36 @@ public class CapaTransferenciaService {
 												String procesados = funcionService.aplica_transaccion(pk_paso);
 												log.info("Total procesados:" + procesados);
 												if (Integer.parseInt(procesados) > 0) {
+													log.info("vamos a eliminar registros");
 													funcionService.eliminarRegistrosProcesados(pk_paso);
+													log.info("Registros eliminados");
 													// Vamos a obtener el folio de autorizacion
-													AuxiliarD ultimo_movimiento = auxiliarDService
-															.buscarUltimoMovimiento(auxiliar_pk);
-													responseTx.setFolioAutorizacion(
-															String.format("%06d", ultimo_movimiento.getIdorigenc())
-																	+ String.format("%06d",
-																			Integer.parseInt(
-																					ultimo_movimiento.getPeriodo()))
-																	+ String.valueOf(ultimo_movimiento.getIdtipo())
-																	+ String.format("%06d",
-																			ultimo_movimiento.getIdpoliza()));
+													
+													AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(auxiliar_pk,Integer.parseInt(tb_usuario_banca.getDato1()),3);
+													log.info("auxiliar encontrado:"+ultimo_movimiento);
+													responseTx.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+ String.format("%06d",ultimo_movimiento.getIdpoliza()));
+													log.info("1.0");
 													RegistroTransaccion registro = new RegistroTransaccion();
-													registro.setFechaRegistro(
-															requestTx.getRegistro().getFechaSolicitud());
+													log.info("1.1");
+													registro.setFechaRegistro(requestTx.getRegistro().getFechaSolicitud());
+													log.info("1.2");
 													responseTx.setRegistro(registro);
+													log.info("1.3");
+													//Vamos a guardar la transferencia
+													Transferencia tx = new Transferencia();
+													log.info("1");
+													tx.setFoliosolicitante(requestTx.getFolioSolicitante().toString());
+													tx.setFecha(timestamp);
+													tx.setSocioorigen(requestTx.getCuentaEmisora().getNumeroSocio());
+											        tx.setCuentaorigen(requestTx.getCuentaEmisora().getNumeroCuenta());
+											        tx.setSociodestino(String.format("%06d",auxiliar_receptor.getIdorigen())+String.format("%02d",auxiliar_receptor.getIdgrupo())+String.format("%06d",auxiliar_receptor.getIdsocio()));
+													tx.setCuentadestino(requestTx.getCuentaAdquiriente().getNumeroCuenta());
+													log.info("1");
+													tx.setMonto(requestTx.getMontoTransaccion().getImporte());
+													tx.setPolizacreada(ultimo_movimiento.getIdorigenc()+"-"+ultimo_movimiento.getPeriodo()+"-"+ultimo_movimiento.getIdtipo()+"-"+ultimo_movimiento.getIdpoliza());
+													tx.setFolioautorizacion(responseTx.getFolioAutorizacion());
+													tx = transferenciaService.guardar(tx);
+													log.info("......Poliza Generada:"+tx.getPolizacreada());
 													responseTx.setCodigo(200);
 												}
 											}
@@ -421,5 +450,417 @@ public class CapaTransferenciaService {
 
 		return responseTx;
 	}
-
+    
+	public ResponseTransferencia comenzarSpei(RequestTransferenciaSpei requestTx) {
+		ResponseTransferencia response = new ResponseTransferencia();
+		try {
+			Ogs ogs = herramientasUtil.ogs(requestTx.getOrdenanteSpei().getNumeroSocio());
+			if(ogs != null) {
+			   Opa opa = herramientasUtil.opa(requestTx.getOrdenanteSpei().getNumeroCuenta());
+			   if(opa != null) {
+				   AuxiliarPK aPk = new AuxiliarPK(opa.getIdorigenp(),opa.getIdproducto(),opa.getIdauxiliar());
+				   Auxiliar a = auxiliarService.buscarPorId(aPk);
+				   if(a != null) {
+					   if(a.getEstatus() == 2) {
+						   ClabeInterbancaria clabe = clabeInterbancariaService.buscarPorId(aPk);
+						  if(clabe != null) {
+							  if(requestTx.getOrdenanteSpei().getClabe().equals(clabe.getClabe())){
+								  if(a.getSaldo().doubleValue() >= (requestTx.getMontoTransaccion().getImporte() + requestTx.getMontoTransaccion().getComision())) {
+									  TablaPK tb_pk = new TablaPK(idtablaspei, "usuario_dispersion");
+									  Tabla tb_usuario_spei = tablaService.buscarPorId(tb_pk);
+									  Date date = new Date(); 
+								      Timestamp timestamp = new Timestamp(date.getTime()); 
+									  String sai_auxiliar = funcionService.sai_auxiliar(aPk);
+									  MovimientoPaso movimientoPaso = new MovimientoPaso(); 
+									  //Preparando movimiento cargo
+									  MovimientoPasoPK pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+												String.valueOf(requestTx.getFolioSolicitante()),
+												a.getPk().getIdorigenp(),
+												a.getPk().getIdproducto(),
+												a.getPk().getIdauxiliar());
+										movimientoPaso.setPk(pk_paso);
+										movimientoPaso.setIdorigen(a.getIdorigen());
+										movimientoPaso.setIdgrupo(a.getIdgrupo());
+										movimientoPaso.setIdsocio(a.getIdsocio());
+										movimientoPaso.setCargoabono(0);
+										movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte()+requestTx.getMontoTransaccion().getComision());
+										movimientoPaso.setSai_aux(sai_auxiliar);
+										movimientoPaso.setIdordenspei(requestTx.getFolioSolicitante().intValue());
+										MovimientoPaso movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+										
+										//Preparando movimiento Abono cuenta
+										pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+													String.valueOf(requestTx.getFolioSolicitante()),
+													0,
+													0,
+													0);
+										tb_pk = new TablaPK(idtablaspei, "cuenta_dispersion");
+										Tabla cuenta = tablaService.buscarPorId(tb_pk); 
+										movimientoPaso.setPk(pk_paso);
+										movimientoPaso.setIdorigen(a.getIdorigen());
+										movimientoPaso.setIdgrupo(a.getIdgrupo());
+										movimientoPaso.setIdsocio(a.getIdsocio());
+										movimientoPaso.setIdcuenta(cuenta.getDato1());
+										movimientoPaso.setCargoabono(1);
+										movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
+										movimientoPaso.setSai_aux(sai_auxiliar);
+										movimientoPaso.setIdordenspei(requestTx.getFolioSolicitante().intValue());
+										movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+										
+										//Vamos a generar poliza de comision por la dispersion
+										//Preparando movimiento cargo
+										tb_pk = new TablaPK(idtablaspei,"cuenta_comision_dispersion");
+										cuenta = tablaService.buscarPorId(tb_pk);
+										pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+													String.valueOf(requestTx.getFolioSolicitante()),
+													0,
+													1,
+													0);
+										movimientoPaso.setPk(pk_paso);
+										movimientoPaso.setIdorigen(a.getIdorigen());
+										movimientoPaso.setIdgrupo(a.getIdgrupo());
+										movimientoPaso.setIdsocio(a.getIdsocio());
+										movimientoPaso.setCargoabono(1);
+										movimientoPaso.setMonto(requestTx.getMontoTransaccion().getComision());										
+										movimientoPaso.setIdordenspei(requestTx.getFolioSolicitante().intValue());
+										movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+										String procesados = funcionService.aplica_transaccion(movimientoPasoRegistro.getPk());
+										if (Integer.parseInt(procesados) > 0) {
+											funcionService.eliminarRegistrosProcesados(pk_paso);
+											// Vamos a obtener el folio de autorizacion
+											AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(aPk,Integer.parseInt(tb_usuario_spei.getDato1()),3);
+											response.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+String.format("%06d",ultimo_movimiento.getIdpoliza()));
+											RegistroTransaccion registro = new RegistroTransaccion();
+											registro.setFechaRegistro(requestTx.getRegistro().getFechaSolicitud());
+											response.setRegistro(registro);
+											
+											//Vamos a guardar la transferencia
+											Transferencia tx = new Transferencia();
+											tx.setFoliosolicitante(requestTx.getFolioSolicitante().toString());
+											tx.setFecha(timestamp);
+											tx.setSocioorigen(requestTx.getOrdenanteSpei().getNumeroSocio());
+									        tx.setCuentaorigen(requestTx.getOrdenanteSpei().getNumeroCuenta());
+									        tx.setMonto(requestTx.getMontoTransaccion().getImporte());
+									        tx.setComision(requestTx.getMontoTransaccion().getComision());
+									        tx.setCuentadestino(requestTx.getBeneficiarioSpei().getClabe());
+											tx.setPolizacreada(ultimo_movimiento.getIdorigenc()+"-"+ultimo_movimiento.getPeriodo()+"-"+ultimo_movimiento.getIdtipo()+"-"+ultimo_movimiento.getIdpoliza());
+											tx.setEsspei(true);
+											tx.setFolioautorizacion(response.getFolioAutorizacion());
+											tx = transferenciaService.guardar(tx);
+											log.info("......Poliza Generada:"+tx.getPolizacreada());
+																	
+											
+											
+											
+												
+											SpeiDispersion speiTx = new SpeiDispersion();
+											speiTx.setFoliosolicitante(tx.getFoliosolicitante());
+											speiTx.setFolioautorizacion(response.getFolioAutorizacion());
+											speiTx.setEstadotransaccion("EN PROCESO");
+											
+											speiTx = speiService.guardar(speiTx);
+											response.setCodigo(200);
+										}
+  
+								  }else {
+									  response.setCodigo(409);
+									  response.setMensajeUsuario("Saldo insuficiente para procesar la transaccion");
+								  }
+							   }else {
+						    		  response.setCodigo(409);
+									  response.setMensajeUsuario("Clabes STP no coinciden");
+							   }
+							}else {
+							  response.setCodigo(409);
+							  response.setMensajeUsuario("No existen registros para clabe interbancaria");
+							}  
+					     }else {
+					    	 response.setCodigo(409);
+					    	 response.setMensajeUsuario("Cuenta inactiva");
+					     }
+				   }else {
+					   response.setCodigo(409);
+					   response.setMensajeUsuario("Cuenta ordenante no existe");
+				   }
+			   }else {
+				 response.setCodigo(409);
+				 response.setMensajeUsuario("Formato de cuenta invalido");
+			   }
+			}else {
+			  response.setCodigo(404);
+			  response.setMensajeUsuario("Socio no existe");
+			}
+		} catch (Exception e) {
+			log.info(":::::::::::::::Error al procesar SPEI:::::::::"+e.getMessage());
+		}
+		return response;
+	}
+	
+	public ResponseActualizacionSpei actualizarOrden(SpeiActualizacion orden) {
+		ResponseActualizacionSpei response = new ResponseActualizacionSpei();
+		log.info("folio:"+orden.getFolioSolicitante());
+		try {
+			SpeiDispersion spei =  speiService.buscarPorId(String.valueOf(orden.getFolioAutorizacion()));
+			if(spei != null) {
+				Date date = new Date(); 
+			    Timestamp timestamp = new Timestamp(date.getTime()); 
+				spei.setEstadotransaccion(orden.getEstadoTransaccion());
+				spei.setFechaactualizacion(timestamp);
+				spei.setFolioautorizacion(orden.getFolioAutorizacion());
+				spei.setClaverastreo(orden.getClaveRastreoSpei());
+				spei.setFoliosolicitante(String.valueOf(orden.getFolioSolicitante()));
+				 if(spei.getEstadotransaccion().toUpperCase().indexOf("APLICADA") != 0) {
+					 log.info("Si que ebtro");
+					  Transferencia tx = transferenciaService.buscarPorId(spei.getFolioautorizacion());
+					  Opa opa = herramientasUtil.opa(tx.getCuentaorigen());
+					  log.info(""+opa);
+					  AuxiliarPK aPk = new AuxiliarPK(opa.getIdorigenp(),opa.getIdproducto(),opa.getIdauxiliar());
+					  Auxiliar a = auxiliarService.buscarPorId(aPk);
+				 	  TablaPK tb_pk = new TablaPK(idtablaspei, "usuario_dispersion");
+					  Tabla tb_usuario_spei = tablaService.buscarPorId(tb_pk);
+					  
+					  String sai_auxiliar = funcionService.sai_auxiliar(aPk);
+					  MovimientoPaso movimientoPaso = new MovimientoPaso(); 
+					  tb_pk = new TablaPK(idtablaspei, "cuenta_comision_dispersion");
+					  Tabla cuenta_comision = tablaService.buscarPorId(tb_pk);
+					  //Preparando movimiento abono
+					  MovimientoPasoPK pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+							  String.valueOf(orden.getFolioSolicitante()),
+								a.getPk().getIdorigenp(),
+								a.getPk().getIdproducto(),
+								a.getPk().getIdauxiliar());
+						movimientoPaso.setPk(pk_paso);
+						movimientoPaso.setIdorigen(a.getIdorigen());
+						movimientoPaso.setIdgrupo(a.getIdgrupo());
+						movimientoPaso.setIdsocio(a.getIdsocio());
+						movimientoPaso.setCargoabono(1);
+						movimientoPaso.setMonto(tx.getMonto()+tx.getComision());
+						movimientoPaso.setSai_aux(sai_auxiliar);
+						movimientoPaso.setIdordenspei(Integer.parseInt(tx.getFoliosolicitante().substring(0,6)));
+						movimientoPaso.setSpei_cancelado(true);
+						MovimientoPaso movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+						
+						//Preparando movimiento cargo
+						pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+									String.valueOf(orden.getFolioSolicitante()),
+									0,
+									0,
+									0);
+						movimientoPaso.setPk(pk_paso);
+						movimientoPaso.setIdorigen(a.getIdorigen());
+						movimientoPaso.setIdgrupo(a.getIdgrupo());
+						movimientoPaso.setIdsocio(a.getIdsocio());
+						movimientoPaso.setIdcuenta(cuenta_comision.getDato1());
+						movimientoPaso.setCargoabono(0);
+						movimientoPaso.setMonto(tx.getMonto());
+						movimientoPaso.setSai_aux(sai_auxiliar);
+						movimientoPaso.setIdordenspei(Integer.parseInt(tx.getFoliosolicitante().substring(0,6)));
+						movimientoPaso.setSpei_cancelado(true);
+						movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+						
+						
+						
+						//Preparando movimiento cargo
+						pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
+										String.valueOf(orden.getFolioSolicitante()),
+										0,
+										1,
+										0);
+						movimientoPaso.setPk(pk_paso);
+						movimientoPaso.setIdorigen(a.getIdorigen());
+						movimientoPaso.setIdgrupo(a.getIdgrupo());
+						movimientoPaso.setIdsocio(a.getIdsocio());
+						movimientoPaso.setIdcuenta(cuenta_comision.getDato1());
+						movimientoPaso.setCargoabono(0);
+						movimientoPaso.setMonto(tx.getComision());
+						movimientoPaso.setSai_aux(sai_auxiliar);
+						movimientoPaso.setIdordenspei(Integer.parseInt(tx.getFoliosolicitante().substring(0,6)));
+						movimientoPaso.setSpei_cancelado(true);
+						movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+						
+						String procesados = funcionService.aplica_transaccion(movimientoPasoRegistro.getPk());
+						if (Integer.parseInt(procesados) > 0) {
+							funcionService.eliminarRegistrosProcesados(pk_paso);	
+							AuxiliarD ad = auxiliarDService.buscarUltimoMovimiento(aPk,Integer.parseInt(tb_usuario_spei.getDato1()),3);
+							spei.setPoliza_ajuste(String.valueOf(ad.getIdorigenc())+"-"+ad.getPeriodo()+"-"+String.valueOf(ad.getIdtipo())+"-"+ad.getIdpoliza());
+							response.setMensaje("Orden ejecutada con exito");
+							response.setCodigo(200);
+							speiService.guardar(spei);
+				        }
+				}else {
+					speiService.guardar(spei);
+					response.setMensaje("Orden ejecutada con exito");
+					response.setCodigo(200);
+				}
+			}else {
+				response.setCodigo(409);
+				response.setMensaje("Error no existe la orden que intenta actualizar");
+			}
+		} catch (Exception e) {
+			log.info("::::::::::::::.Error al actualizar orden spei:::::::::::::::::::::"+e.getMessage());
+		}
+		return response;
+	}
+	
+	
+	
+	public ResponseTransferencia sendAbono(RequestTransferenciaSpei orden) {
+		ResponseTransferencia response = new ResponseTransferencia();
+		SpeiAbono abono = new SpeiAbono();
+		try {
+			ClabeInterbancaria clabe =  clabeInterbancariaService.buscarPorClabe(orden.getBeneficiarioSpei().getClabe());
+			   if(clabe != null) {
+				   abono.setFechasolicitud(orden.getRegistro().getFechaSolicitud());
+				   abono.setClaverastreospei(orden.getClaveRastreoSpei());
+				   abono.setDescripcion(orden.getDescripcion());
+				   abono.setClabeordenante(orden.getOrdenanteSpei().getClabe());
+				   abono.setClabebeneficiario(orden.getBeneficiarioSpei().getClabe());
+				   abono.setNombrebeneficiario(orden.getBeneficiarioSpei().getNombre());
+				   abono.setMonto(orden.getMontoTransaccion().getImporte());
+				   abono.setFoliosolicitante(String.valueOf(orden.getFolioSolicitante()));
+				   abono.setReferencianumerica(orden.getOrdenanteSpei().getReferenciaNumerica());
+				   abono.setComision(orden.getMontoTransaccion().getComision());
+				   
+				   abono = speiService.guardar(abono);
+				   Auxiliar a = auxiliarService.buscarPorId(clabe.getPk());
+				   if(a != null) {
+					   if(a.getEstatus() == 2) {
+						   TablaPK tb_pk = new TablaPK(idtablaspei, "usuario_abono");
+						   Tabla tb_usuario_spei = tablaService.buscarPorId(tb_pk);
+						   String sai_auxiliar = funcionService.sai_auxiliar(a.getPk());
+						   SpeiAbonoPaso movimientoPaso = new SpeiAbonoPaso();
+						   
+						   //Abono a folio auxiliar
+						   AbonoSpeiPK pk_paso = new AbonoSpeiPK(
+								        Integer.parseInt(tb_usuario_spei.getDato1()),
+								        funcionService.sesion(),
+							  		    orden.getOrdenanteSpei().getReferenciaNumerica(),1);
+						   movimientoPaso.setPk(pk_paso);
+						   movimientoPaso.setIdorigen(a.getIdorigen());
+						   movimientoPaso.setIdgrupo(a.getIdgrupo());
+						   movimientoPaso.setIdsocio(a.getIdsocio());
+						   movimientoPaso.setEsentrada(true);
+						   movimientoPaso.setIdorigenp(a.getPk().getIdorigenp());
+                       	   movimientoPaso.setIdproducto(a.getPk().getIdproducto());
+                       	   movimientoPaso.setIdauxiliar(a.getPk().getIdauxiliar());
+                       	   movimientoPaso.setAcapital(orden.getMontoTransaccion().getImporte());
+                       	   movimientoPaso.setTipopoliza(1);		
+                       	   movimientoPaso.setSai_aux(sai_auxiliar);
+                       	   SpeiAbonoPaso movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+						   
+						  
+                       	  //Cargo a cuenta contable par balanceo
+                       	  pk_paso = new AbonoSpeiPK(
+							        Integer.parseInt(tb_usuario_spei.getDato1()),
+							        funcionService.sesion(),
+						  		    orden.getOrdenanteSpei().getReferenciaNumerica(),2);
+                       	  
+                       	  tb_pk = new TablaPK(idtablaspei, "cuenta_abono");
+                       	  Tabla cuenta_abono = tablaService.buscarPorId(tb_pk);
+                       	  movimientoPaso = new SpeiAbonoPaso();
+                       	  movimientoPaso.setPk(pk_paso);
+                       	  movimientoPaso.setIdcuenta(cuenta_abono.getDato1());
+                          movimientoPaso.setIdorigen(a.getIdorigen());
+                      	  movimientoPaso.setIdgrupo(a.getIdgrupo());
+                      	  movimientoPaso.setIdsocio(a.getIdsocio());
+                      	  movimientoPaso.setEsentrada(false);
+                      	  movimientoPaso.setAcapital(orden.getMontoTransaccion().getImporte());
+                          movimientoPaso.setTipopoliza(1);
+                          
+                          movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+                          
+                          Integer movs_aplicados = funcionService.aplica_transaccion_spei(
+                        		                   movimientoPaso.getPk().getIdusuario(),
+                        		                   movimientoPaso.getPk().getSesion(),
+                        		                   1,
+                        		                   movimientoPaso.getPk().getReferencia());
+                      	
+                          AuxiliarD ultimo_movimiento = null;  
+                         if(movs_aplicados > 0) {
+                        	 log.info("Total aplicados:"+movs_aplicados);
+                             pasoService.eliminar(movimientoPasoRegistro);
+                        	 
+                             Date date1 = new Date(); 
+  						     Timestamp timestamp1 = new Timestamp(date1.getTime());
+                        	 abono.setFechaejecucion(timestamp1);
+                        	 
+                        	 //Si los movimientos anteriores se aplicaron generamos comision de poliza
+                        	 //Cargo a folio auxiliar
+                        	 if(orden.getMontoTransaccion().getComision() >0 ) {
+                        		 pk_paso = new AbonoSpeiPK(
+   								        Integer.parseInt(tb_usuario_spei.getDato1()),
+   								        funcionService.sesion(),
+   							  		    orden.getOrdenanteSpei().getReferenciaNumerica(),3);
+   						     
+   						     movimientoPaso.setPk(pk_paso);
+   						     movimientoPaso.setIdorigen(a.getIdorigen());
+   						     movimientoPaso.setIdgrupo(a.getIdgrupo());
+   						     movimientoPaso.setIdsocio(a.getIdsocio());
+   						     movimientoPaso.setEsentrada(false);
+   						     movimientoPaso.setIdorigenp(a.getPk().getIdorigenp());
+                          	 movimientoPaso.setIdproducto(a.getPk().getIdproducto());
+                          	 movimientoPaso.setIdauxiliar(a.getPk().getIdauxiliar());
+                          	 movimientoPaso.setAcapital(orden.getMontoTransaccion().getComision());
+                          	 movimientoPaso.setTipopoliza(3);		
+                          	 movimientoPaso.setSai_aux(sai_auxiliar);
+                          	 movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+   						     
+                            	
+                          	movimientoPaso = new SpeiAbonoPaso();
+                          	pk_paso = new AbonoSpeiPK(
+   							        Integer.parseInt(tb_usuario_spei.getDato1()),
+   							        funcionService.sesion(),
+   						  		    orden.getOrdenanteSpei().getReferenciaNumerica(),4);
+                          	 
+                          	tb_pk = new TablaPK(idtablaspei, "cuenta_comision_abono");     
+                          	cuenta_abono = tablaService.buscarPorId(tb_pk);
+                          	movimientoPaso.setPk(pk_paso);
+                             movimientoPaso.setIdcuenta(cuenta_abono.getDato1());
+                             movimientoPaso.setIdorigen(a.getIdorigen());
+                         	movimientoPaso.setIdgrupo(a.getIdgrupo());
+                         	movimientoPaso.setIdsocio(a.getIdsocio());
+                         	movimientoPaso.setEsentrada(true);
+                         	movimientoPaso.setAcapital(orden.getMontoTransaccion().getComision());
+                             movimientoPaso.setTipopoliza(3);                            
+                             movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+                             
+                             
+                            movs_aplicados = funcionService.aplica_transaccion_spei(
+                           		                   movimientoPaso.getPk().getIdusuario().intValue(),
+                           		                   movimientoPaso.getPk().getSesion(),
+                           		                   3,
+                           		                   movimientoPaso.getPk().getReferencia());                            
+                             pasoService.eliminar(movimientoPasoRegistro);
+                             ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(a.getPk(),Integer.parseInt(tb_usuario_spei.getDato1()),1);
+                             abono.setPolizacomision(String.format("%06d", ultimo_movimiento.getIdorigenc())+"-"+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+"-"+String.valueOf(ultimo_movimiento.getIdtipo())+"-"+String.format("%06d",ultimo_movimiento.getIdpoliza()));
+                            }
+                        	 
+                        	ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(a.getPk(),Integer.parseInt(tb_usuario_spei.getDato1()),3);
+                        	abono.setAceptada(true);
+                        	abono.setPolizaabono(String.format("%06d", ultimo_movimiento.getIdorigenc())+"-"+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+"-"+String.valueOf(ultimo_movimiento.getIdtipo())+"-"+String.format("%06d",ultimo_movimiento.getIdpoliza()));
+                        	response.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+String.format("%06d",ultimo_movimiento.getIdpoliza()));
+							RegistroTransaccion registro = new RegistroTransaccion();
+							registro.setFechaRegistro(orden.getRegistro().getFechaSolicitud());
+							response.setRegistro(registro);
+							response.setCodigo(200);
+                        	response.setMensajeUsuario("Exitoso");
+                        	speiService.guardar(abono);
+                          }
+					   }else {
+						   response.setCodigo(409);
+						   response.setMensajeUsuario("Folio auxiliar inactivo");
+					   }
+				   }else {
+					   response.setCodigo(409);
+					   response.setMensajeUsuario("No existe folio relacionado a clabe STP");
+				   }
+			   }else {
+				   response.setCodigo(404);
+				   response.setMensajeUsuario("No existen registros para clabe:"+orden.getBeneficiarioSpei().getClabe());
+			   }				
+		} catch (Exception e) {
+			log.info("::::::::::::::.Error al actualizar orden spei:::::::::::::::::::::"+e.getMessage());
+		}
+		return response;
+	}
 }

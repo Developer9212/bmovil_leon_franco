@@ -18,8 +18,8 @@ public class AuxiliarDServiceImpl implements IAuxiliarDService{
 	private AuxiliarDDao auxiliarDDao;
 	
 	@Override
-	public AuxiliarD buscarUltimoMovimiento(AuxiliarPK pk) {
-		return auxiliarDDao.buscarUltimoMovimiento(pk.getIdorigenp(),pk.getIdproducto(),pk.getIdauxiliar());
+	public AuxiliarD buscarUltimoMovimiento(AuxiliarPK pk,Integer idusuario,Integer idtipo) {
+		return auxiliarDDao.buscarUltimoMovimiento(pk.getIdorigenp(),pk.getIdproducto(),pk.getIdauxiliar(),idusuario,idtipo);
 	}
 
 	@Override
@@ -31,5 +31,12 @@ public class AuxiliarDServiceImpl implements IAuxiliarDService{
 	public Integer contadorPorFecha(AuxiliarPK pk, Date fechaIni, Date fechaFin) {
 		return auxiliarDDao.totalMovFecha(pk.getIdorigenp(),pk.getIdproducto(),pk.getIdauxiliar(),fechaIni, fechaFin);
 	}
+
+	@Override
+	public AuxiliarD buscarUltimoMovimiento(AuxiliarPK pk) {
+		return auxiliarDDao.buscarUltimoMovimiento(pk.getIdorigenp(),pk.getIdproducto(), pk.getIdauxiliar());
+	}
+
+	
 
 }

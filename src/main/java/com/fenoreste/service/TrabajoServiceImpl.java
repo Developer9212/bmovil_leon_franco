@@ -15,7 +15,7 @@ public class TrabajoServiceImpl implements ITrabajoService{
 	
 	@Override
 	public Trabajo buscarPorId(PersonaPK pk) {
-		return trabajoDao.findById(pk).orElse(null);
+		return trabajoDao.buscarPorOgs(pk.getIdorigen(), pk.getIdgrupo(),pk.getIdsocio());
 	}
 
 }

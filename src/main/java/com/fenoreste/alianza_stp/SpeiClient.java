@@ -81,11 +81,13 @@ public class SpeiClient {
 					  .build();
 					response = client.newCall(request).execute();
 					respuesta[0] = String.valueOf(response.code());
-					if(response.code() != 201) {
-						String resultado = response.body().string();
+					String resultado = response.body().string();
+					if(response.code() != 201) {						
 						log.info("Codigo http:"+response.code()+",respuesta:"+resultado);
 						respuesta[1] = resultado;
-					}					
+					}else {
+						log.info("Respuesta Alianza:"+resultado);
+					}
 		} catch (Exception e) {
 			log.info("::::::::::::::::::Error al dar de alta clabe::::::::::::::::::::::"+e.getMessage());
 		}

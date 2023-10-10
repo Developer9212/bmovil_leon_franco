@@ -6,6 +6,7 @@
 package com.fenoreste.entity;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,7 +42,7 @@ public class Origen implements Serializable{
     private String codigopostal;
     private boolean estatus;
     @Column(name = "fechatrabajo")
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     private Date fechatrabajo;
     @Column(name = "cta_rendimientos")
     private String ctaRendimientos;

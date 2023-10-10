@@ -3,8 +3,9 @@ package com.fenoreste.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.fenoreste.entity.AuxiliarPK;
-import com.fenoreste.entity.Ws_siscoop_Clabe_interbancaria;
+import com.fenoreste.entity.ClabeInterbancaria;
 
-public interface ClabeInterbancariaDao extends JpaRepository<Ws_siscoop_Clabe_interbancaria,AuxiliarPK>{
+public interface ClabeInterbancariaDao extends JpaRepository<ClabeInterbancaria,AuxiliarPK>{
   
+	public ClabeInterbancaria findByClabe(String clabe);
 }

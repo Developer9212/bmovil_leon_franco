@@ -10,5 +10,8 @@ public interface IFuncionService {
 	public String prestamo_cuanto(AuxiliarPK pk,Integer tipoAmortizacion);
 	public String sesion();
 	public String aplica_transaccion(MovimientoPasoPK pk);
+	public Integer aplica_transaccion_spei(Integer idusuario,String sesion,Integer tipopoliza,String referencia);
 	public void eliminarRegistrosProcesados(MovimientoPasoPK pk);
+	public String horaServidor();
+	public boolean horaActividad();
 }
