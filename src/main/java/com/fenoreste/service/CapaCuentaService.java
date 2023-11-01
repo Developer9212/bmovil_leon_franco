@@ -381,15 +381,26 @@ public class CapaCuentaService {
                 		 log.info("Tu lista es:"+listaAuxiliaresD);
                 		 for(int i=0;i<listaAuxiliaresD.size();i++) {
                 			 AuxiliarD mov_ad = listaAuxiliaresD.get(i);
+                			 Producto producto = productoService.buscarPorId(mov_ad.getPk().getIdproducto());
                 			 Movimiento mov = new Movimiento();
                 			 log.info("Numero de transaccion:"+mov_ad.getTransaccion());
                 			 mov.setId(String.valueOf(mov_ad.getTransaccion()));
                 			 if(mov_ad.getCargoabono() == 0) {
-                                  mov.setDescripcion("RETIRO"); 
-                                  mov.setTipo("CREDITO");
-                			 }else {
-                                  mov.setDescripcion("DEPOSITO"); 
-                                  mov.setTipo("DEBITO");
+                				 	 mov.setDescripcion("RETIRO");
+                					 mov.setTipo("DEBITO");
+                			 } else {
+                				 if(producto.getTipoproducto() == 2) {
+                					 mov.setTipo("DEBITO");
+                					 mov.setDescripcion("Capital:"+mov_ad.getMonto()+
+                							            ",Interes Ordinario:"+mov_ad.getMontoio()+
+                							            ",IVA Interes Ordinario:"+mov_ad.getMontoiva()+
+                							            ",Interes Moratorio:"+mov_ad.getMontoim()+
+                							            ",Interes Moratorio IVA:"+mov_ad.getMontoivaim());
+                				 }else{
+                					 mov.setDescripcion("DEPOSITO"); 
+                                     mov.setTipo("CREDITO"); 
+                				 }
+                                  
                 			 }
                 			 log.info("fechaaaaaaaaaaaaaaaaaaASASa.................." + mov_ad.getFecha().toString().replace(" ","T")+"-06");//+util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha()));
                 			 mov.setFechaTransaccion(mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//.replace(" ","T").replace("-05","-06"));//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");

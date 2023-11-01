@@ -786,7 +786,7 @@ public class CapaTransferenciaService {
                         	 
                         	 //Si los movimientos anteriores se aplicaron generamos comision de poliza
                         	 //Cargo a folio auxiliar
-                        	 if(orden.getMontoTransaccion().getComision() >0 ) {
+                        	 if(orden.getMontoTransaccion().getComision() > 0 ) {
                         		 pk_paso = new AbonoSpeiPK(
    								        Integer.parseInt(tb_usuario_spei.getDato1()),
    								        funcionService.sesion(),
@@ -835,7 +835,7 @@ public class CapaTransferenciaService {
                              abono.setPolizacomision(String.format("%06d", ultimo_movimiento.getIdorigenc())+"-"+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+"-"+String.valueOf(ultimo_movimiento.getIdtipo())+"-"+String.format("%06d",ultimo_movimiento.getIdpoliza()));
                             }
                         	 
-                        	ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(a.getPk(),Integer.parseInt(tb_usuario_spei.getDato1()),3);
+                        	ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(a.getPk(),Integer.parseInt(tb_usuario_spei.getDato1()),1);
                         	abono.setAceptada(true);
                         	abono.setPolizaabono(String.format("%06d", ultimo_movimiento.getIdorigenc())+"-"+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+"-"+String.valueOf(ultimo_movimiento.getIdtipo())+"-"+String.format("%06d",ultimo_movimiento.getIdpoliza()));
                         	response.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+String.format("%06d",ultimo_movimiento.getIdpoliza()));
