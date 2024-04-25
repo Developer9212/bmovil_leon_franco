@@ -157,3 +157,34 @@ CREATE TABLE ws_clabe_respuesta_alianza(
 
 );
 
+
+drop table if exists bankingly_movimientos_ca cascade;
+create table bankingly_movimientos_ca (
+  fecha           timestamp,
+  idusuario       integer,
+  sesion          varchar,
+  referencia      varchar,
+  idorigen        integer,
+  idgrupo         integer,
+  idsocio         integer,
+  idorigenp       integer,
+  idproducto      integer,
+  idauxiliar      integer,
+  idcuenta        varchar(20) default '0',
+  cargoabono      integer,
+  monto           numeric,
+  iva             numeric,
+  io              numeric,
+  ivaio           numeric,
+  im              numeric,
+  ivaim           numeric,
+  tipo_amort      integer,
+  aplicado        boolean default FALSE,
+  sai_aux         text,
+  idorden_spei    integer default 0,
+  spei_cancelado  boolean default FALSE,
+  ref_temporal    text,
+  idx             integer default 0,
+  primary key (fecha,idusuario,sesion,referencia,idorigenp,idproducto,idauxiliar,idx),
+  foreign key (idorigen,idgrupo,idsocio) references personas
+);

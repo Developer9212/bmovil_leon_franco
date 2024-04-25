@@ -94,9 +94,10 @@ public class CapaCuentaService {
 									  log.info("Si accedio a buscar clabe");
 									  //Aqui buscamos la clabe en ClabeInterbancaria
 									  ClabeInterbancaria clabe_interbancaria = clabeInterbancariaService.buscarPorId(cuenta_eje.getPk());
-									  log.info("La clabe interbancaria es:"+clabe_interbancaria.getClabe());
+									  
 									  if(clabe_interbancaria != null) {
-										  log.info("Se seteo la clabe");
+										  log.info("La clabe interbancaria es:"+clabe_interbancaria.getClabe());
+										  log.info("Se seteo la clabe 1");
 										  response.setClabe(clabe_interbancaria.getClabe());   
 									  }
 								  }

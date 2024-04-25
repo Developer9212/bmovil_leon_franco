@@ -84,7 +84,6 @@ public class CapaTransferenciaService {
 			Opa opa = null;
 			PersonaPK pk_persona = null;
 			Persona socio_emisor = null;
-			Persona socio_receptor= null;
 			AuxiliarPK auxiliar_pk = null;
 			Auxiliar auxiliar_emisor = null;
 			Auxiliar auxiliar_receptor = null;
@@ -143,6 +142,7 @@ public class CapaTransferenciaService {
 																auxiliar_emisor.getPk().getIdorigenp(),
 																auxiliar_emisor.getPk().getIdproducto(),
 																auxiliar_emisor.getPk().getIdauxiliar());
+														
 														movimientoPaso.setPk(pk_paso);
 														movimientoPaso.setIdorigen(ogs_emisor.getIdorigen());
 														movimientoPaso.setIdgrupo(ogs_emisor.getIdgrupo());
@@ -267,8 +267,7 @@ public class CapaTransferenciaService {
 														movimientoPaso.setIdgrupo(ogs_emisor.getIdgrupo());
 														movimientoPaso.setIdsocio(ogs_emisor.getIdsocio());
 														movimientoPaso.setCargoabono(0);
-														movimientoPaso
-																.setMonto(requestTx.getMontoTransaccion().getImporte());
+														movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
 														movimientoPaso.setSai_aux(sai_auxiliar);
 														MovimientoPaso movimientoPasoRegistro = pasoService
 																.guardar(movimientoPaso);
@@ -293,8 +292,7 @@ public class CapaTransferenciaService {
 														movimientoPaso.setIdgrupo(auxiliar_receptor.getIdgrupo());
 														movimientoPaso.setIdsocio(auxiliar_receptor.getIdsocio());
 														movimientoPaso.setCargoabono(1);
-														movimientoPaso
-																.setMonto(requestTx.getMontoTransaccion().getImporte());
+														movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
 														movimientoPaso.setSai_aux(sai_auxiliar);
 														movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 
@@ -316,8 +314,7 @@ public class CapaTransferenciaService {
 														movimientoPaso.setIdgrupo(ogs_emisor.getIdgrupo());
 														movimientoPaso.setIdsocio(ogs_emisor.getIdsocio());
 														movimientoPaso.setCargoabono(0);
-														movimientoPaso
-																.setMonto(requestTx.getMontoTransaccion().getImporte());
+														movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
 														movimientoPaso.setSai_aux("");
 														movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 
@@ -341,8 +338,7 @@ public class CapaTransferenciaService {
 														movimientoPaso.setIdgrupo(auxiliar_receptor.getIdgrupo());
 														movimientoPaso.setIdsocio(auxiliar_receptor.getIdsocio());
 														movimientoPaso.setCargoabono(1);
-														movimientoPaso
-																.setMonto(requestTx.getMontoTransaccion().getImporte());
+														movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
 														movimientoPaso.setSai_aux("");
 														movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 														bandera_aplicar = true;
@@ -371,7 +367,7 @@ public class CapaTransferenciaService {
 													
 													AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(auxiliar_pk,Integer.parseInt(tb_usuario_banca.getDato1()),3);
 													log.info("auxiliar encontrado:"+ultimo_movimiento);
-													responseTx.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+ String.format("%06d",ultimo_movimiento.getIdpoliza()));
+													responseTx.setFolioAutorizacion(movimientoPaso.getPk().getReferencia());//String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+ String.format("%06d",ultimo_movimiento.getIdpoliza()));
 													log.info("1.0");
 													RegistroTransaccion registro = new RegistroTransaccion();
 													log.info("1.1");
@@ -701,8 +697,6 @@ public class CapaTransferenciaService {
 		}
 		return response;
 	}
-	
-	
 	
 	public ResponseTransferencia sendAbono(RequestTransferenciaSpei orden) {
 		ResponseTransferencia response = new ResponseTransferencia();

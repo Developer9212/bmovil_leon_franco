@@ -5,6 +5,9 @@ INSERT INTO tablas(idtabla,idelemento,nombre,dato1,dato2)VALUES('banca_movil','u
 DELETE FROM tablas WHERE idtabla='banca_movil' AND idelemento = 'usuario';
 INSERT INTO tablas(idtabla,idelemento,nombre,dato1)VALUES('banca_movil','usuario','Usuario para operar banca movil','999');
 
+DELETE FROM tablas WHERE idtabla='banca_movil' AND idelemento='path_alianza_servicios';
+INSERT INTO tablas(idtabla,idelemento,dato2)VALUES('banca_movil','path_alianza_servicios','https://cmas-api-prod.cpalianza.com.mx');
+
 DELETE FROM tablas WHERE idtabla='banca_movil' AND idelemento = 'credenciales_token';
 INSERT INTO tablas(idtabla,idelemento,nombre,dato1,dato2)VALUES('banca_movil','credenciales_token','Credenciales para formar token','leonfranco-cmascore-dev','Q1QNviHK3');
 
@@ -38,6 +41,8 @@ INSERT INTO tablas(idtabla,idelemento,nombre,dato1)VALUES('spei','cuenta_dispers
 
 DELETE FROM tablas WHERE idtabla='spei' AND idelemento = 'cuenta_comision_dispersion';
 INSERT INTO tablas(idtabla,idelemento,nombre,dato1)VALUES('spei','cuenta_comision_dispersion','Cuenta contable a donde va la comision','20407160104002');
+
+
 
 
 

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fenoreste.alianza_stp.SpeiClient;
+import com.fenoreste.alianza_stp.tokenModel;
 import com.fenoreste.entity.User;
 import com.fenoreste.service.IUserService;
 
@@ -28,6 +30,9 @@ public class UserController {
 	
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	
+	@Autowired
+	private SpeiClient speiClient;
 	
 	@GetMapping
 	public ResponseEntity<?>obtenerUsuarios(){
@@ -47,6 +52,11 @@ public class UserController {
 		this.userSevice.save(user);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 		
+	}
+	
+	@GetMapping("/tokenTest")
+	public tokenModel token() {		
+		return speiClient.tokenAuth();
 	}
 	
 }

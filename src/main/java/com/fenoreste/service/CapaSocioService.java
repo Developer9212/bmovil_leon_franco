@@ -189,7 +189,7 @@ public class CapaSocioService {
 										  res.setNumeroSocio(socio);
 										  res.setNombreSocio(persona.getNombre() + " "+ persona.getAppaterno() + " " + persona.getApmaterno());
 										  res.setTipoCuenta("PERSONAL");
-										  
+										  log.info("1");
 										  res_saldo = new ResponseSaldo();
 										  res.setSubtipoCuenta("AHORRO");
 										  res.setNivelOperacion("DEPOSITOS_Y_RETIROS");						  
@@ -197,6 +197,7 @@ public class CapaSocioService {
 										  res_saldo.setMonto(a.getSaldo().doubleValue());
 										  res_saldo.setMoneda("MXN");						  
 										  saldos.add(res_saldo);
+										  log.info("2");
 										  
 										  res_saldo = new ResponseSaldo();						  
 										  res_saldo.setTipo("DISPONIBLE");
@@ -204,12 +205,14 @@ public class CapaSocioService {
 										  res_saldo.setMoneda("MXN");						  
 										  saldos.add(res_saldo);
 										  
+										  log.info("3");
 										  res_saldo = new ResponseSaldo();
 										  res_saldo.setTipo("BLOQUEADO");
 										  res_saldo.setMonto(a.getGarantia().doubleValue());
 										  res_saldo.setMoneda("MXN");
 										  saldos.add(res_saldo);
 										  
+										  log.info("4");
 										  res.setNumeroCuenta(String.format("%06d",a.getPk().getIdorigenp())+String.format("%05d",a.getPk().getIdproducto())+String.format("%08d",a.getPk().getIdauxiliar()));
 										  res.setAlias(p.getNombre());						 
 										  res_prod.setId(String.valueOf(p.getIdproducto()));
@@ -217,8 +220,16 @@ public class CapaSocioService {
 										  res.setProducto(res_prod);
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
+										  log.info("ad:"+ad);
+										  if(ad!= null) {
+											  log.info("Fecha Ultimo mov:"+ad.getFecha());
+											  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,19));
+											  log.info(ad.getFecha().replace(" ","T").substring(0,19));
+										  }else {
+											  log.info("no hay movimientos para producto:"+p.getIdproducto());
+										  }
 										  
+										  log.info("5");
 										  //res.setClabe("");//String.format("%06d",a.getPk().getIdorigenp())+String.format("%05d",a.getPk().getIdproducto())+String.format("%08d",a.getPk().getIdauxiliar()));  
 										  res.setSaldos(saldos);
 										  listaCuentas.add(res);
@@ -261,7 +272,7 @@ public class CapaSocioService {
 										  res.setProducto(res_prod);
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
+										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,19));
 										  res.setFechaUltimaNotificacion(null);
 										  
 										  inversion_res.setFechaVencimiento(util.convertFechaDate(auxiliarService.fechaVencimientoAmortizacion(a.getPk())).replace("T00:00:00",""));
@@ -374,7 +385,7 @@ public class CapaSocioService {
 										  
 										  res.setTipoRelacion("UNICO_PROPIETARIO");
 										  res.setFechaApertura(util.convertFechaDate(a.getFechaactivacion()));
-										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,25));
+										  res.setFechaUltimoMovimiento(ad.getFecha().replace(" ","T").substring(0,19));
 										  res.setFechaUltimaNotificacion(null);
 										  
 										  
@@ -384,10 +395,10 @@ public class CapaSocioService {
 										  
 									   }
 									  res.setEstatus("APERTURADA");									 
-							      }else {
+							      }/*else {
 							    	 response.setMensaje("No se puede operar sobre producto 100,"+p.getNombre());
 								    log.info("....No se puede operar sobre producto 100....");
-							     }				  
+							     }	*/			  
 							   }else {
 								   response.setMensaje("Cuenta inactiva");
 								   log.info("...........Cuenta inactiva");

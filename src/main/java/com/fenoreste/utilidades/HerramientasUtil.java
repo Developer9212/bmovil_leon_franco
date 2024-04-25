@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HerramientasUtil {
 
 	public Ogs ogs(String customerId) {
+		log.info("OGS a formatear:"+customerId);
 		Ogs ogs = new Ogs();
 		try {
 			ogs.setIdorigen(Integer.parseInt(customerId.substring(0, 6)));

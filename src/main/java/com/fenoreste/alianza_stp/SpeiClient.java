@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.fenoreste.entity.Tabla;
 import com.fenoreste.entity.TablaPK;
 import com.fenoreste.service.ITablaService;
+import com.fenoreste.utilidades.CustomOkHttpClient;
 import com.google.gson.Gson;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,14 +43,23 @@ public class SpeiClient {
     private String json = null;
     private JSONObject jsonObject = null;
     
-	private tokenModel tokenAuth() {
+	public tokenModel tokenAuth() {
 		tokenModel modeloToken = new tokenModel();
 			 try {
+				 
+				 CustomOkHttpClient customOkHttpClient = new CustomOkHttpClient();
+				 
+				 client = customOkHttpClient.createOkHttpClient();
 					String auth = codificarCrendenciales();
 		            mediaType= MediaType.parse("application/x-www-form-urlencoded");
 					body = RequestBody.create(mediaType, "grant_type=client_credentials&scope=cmas");
+					
+					TablaPK tbPkHost = new TablaPK("banca_movil", "path_alianza_servicios");
+					Tabla tbHost = tablaService.buscarPorId(tbPkHost);		
+					String url = tbHost.getDato2() + basePath + tokenPath;
+					log.info("La url de roken es:"+url);
 					request = new Request.Builder()
-					  .url(host + basePath + tokenPath)
+					  .url(url)
 					  .method("POST", body)
 					  .addHeader("Authorization", "Basic "+ auth)
 					  .addHeader("Content-Type", "application/x-www-form-urlencoded")
@@ -70,11 +80,15 @@ public class SpeiClient {
 	public String[] altaClabe(personaFisicaModel modelo) {
 		String[] respuesta = new String[2];
 		try {
+			       CustomOkHttpClient customOkHttpClient = new CustomOkHttpClient();
+			       client = customOkHttpClient.createOkHttpClient();
 			     	mediaType = MediaType.parse("application/json");
 					json = gson.toJson(modelo);
 					body = RequestBody.create(mediaType, json);
+					TablaPK tbPkHost = new TablaPK("banca_movil", "path_alianza_servicios");
+					Tabla tbHost = tablaService.buscarPorId(tbPkHost);			
 					request = new Request.Builder()
-					  .url(host + basePath + altaClabePath)
+					  .url(tbHost.getDato2() + basePath + altaClabePath)
 					  .method("POST", body)
 					  .addHeader("Authorization", "Bearer "+ tokenAuth().getAccess_token())
 					  .addHeader("Content-Type", "application/json")

@@ -15,7 +15,7 @@ public interface AuxiliarDao extends JpaRepository<Auxiliar, AuxiliarPK>{
 	@Query(value = "SELECT * FROM auxiliares WHERE idorigen=?1 AND idgrupo=?2 AND idsocio=?3 AND idproducto=100",nativeQuery = true)
 	public Auxiliar buscarPorOGSIdproductoSocial(Integer idorigen,Integer idgrupo,Integer idsocio);
 	
-	@Query(value = "SELECT * FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=0 AND a.estatus=2",nativeQuery = true)
+	@Query(value = "SELECT * FROM auxiliares a INNER JOIN productos_banca_movil pm USING(idproducto) INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3 AND p.tipoproducto=0 AND a.estatus=2",nativeQuery = true)
 	public List<Auxiliar>listaAhorrosActivos(Integer idorigen,Integer idgrupo,Integer idsocio,Pageable pageable);
 	
 	@Query(value = "SELECT a.* FROM auxiliares a INNER JOIN productos p USING(idproducto) WHERE a.idorigen=?1 AND a.idgrupo=?2 AND a.idsocio=?3	AND p.tipoproducto=1 AND a.estatus=2",nativeQuery = true)
