@@ -379,12 +379,11 @@ public class CapaCuentaService {
                 		 response.setSubtipoCuenta(tipo);
                 		 List<Movimiento>listadoMovimientos = new ArrayList<>();
                 		 List<AuxiliarD>listaAuxiliaresD = auxiliarDService.buscarTodosMovs(auxiliarPK,util.convertFechaString(fechaInicio),util.convertFechaString(fechaFin),PageRequest.of(inicioPage,finPage));
-                		 log.info("Tu lista es:"+listaAuxiliaresD);
+
                 		 for(int i=0;i<listaAuxiliaresD.size();i++) {
                 			 AuxiliarD mov_ad = listaAuxiliaresD.get(i);
                 			 Producto producto = productoService.buscarPorId(mov_ad.getPk().getIdproducto());
                 			 Movimiento mov = new Movimiento();
-                			 log.info("Numero de transaccion:"+mov_ad.getTransaccion());
                 			 mov.setId(String.valueOf(mov_ad.getTransaccion()));
                 			 
                 			 if(producto.getTipoproducto() == 0) {
@@ -408,10 +407,14 @@ public class CapaCuentaService {
                 					 mov.setDescripcion("CARGO");
                 				 }
                 			 }
-                			
-                			 log.info("fechaaaaaaaaaaaaaaaaaaASASa.................." + mov_ad.getFecha().toString().replace(" ","T")+"-06");//+util.convertFechaDate(mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha()));
-                			 mov.setFechaTransaccion(mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//.replace(" ","T").replace("-05","-06"));//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
-                			 mov.setFechaPublicacion(mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
+
+							 String cadena =  mov_ad.getFecha();//"2022-12-30 23:13:00.469696-05";
+							 int index = cadena.indexOf("-05");
+							 if (index != -1) {
+								  cadena = cadena.substring(0, index).replace(" ", "T")+"-06";
+							 }
+							 mov.setFechaTransaccion(cadena);//mov_ad.getFecha().toString().substring(0, Math.min(25, mov_ad.getFecha().length())).replace(" ","T")+"-06");//substring(0,25).replace(" ","T")+"-06");//.replace(" ","T").replace("-05","-06"));//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
+                			 mov.setFechaPublicacion(cadena);//mov_ad.getFecha().toString().substring(0, Math.min(25, mov_ad.getFecha().length())).replace(" ","T")+"-06");//mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
                 			 mov.setMonto(mov_ad.getMonto().doubleValue());
                 			 listadoMovimientos.add(mov);
                 		 }

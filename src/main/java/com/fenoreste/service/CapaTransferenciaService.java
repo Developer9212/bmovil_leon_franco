@@ -1,5 +1,6 @@
 package com.fenoreste.service;
 
+import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -367,6 +368,7 @@ public class CapaTransferenciaService {
 													
 													AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(auxiliar_pk,Integer.parseInt(tb_usuario_banca.getDato1()),3);
 													log.info("auxiliar encontrado:"+ultimo_movimiento);
+													//String folioAutorizacion = String.format("%025s", movimientoPaso.getPk().getReferencia()).replace(' ', '0');
 													responseTx.setFolioAutorizacion(movimientoPaso.getPk().getReferencia());//String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+ String.format("%06d",ultimo_movimiento.getIdpoliza()));
 													log.info("1.0");
 													RegistroTransaccion registro = new RegistroTransaccion();
@@ -525,7 +527,9 @@ public class CapaTransferenciaService {
 											funcionService.eliminarRegistrosProcesados(pk_paso);
 											// Vamos a obtener el folio de autorizacion
 											AuxiliarD ultimo_movimiento = auxiliarDService.buscarUltimoMovimiento(aPk,Integer.parseInt(tb_usuario_spei.getDato1()),3);
-											response.setFolioAutorizacion(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+String.format("%06d",ultimo_movimiento.getIdpoliza()));
+											String folioAuto = String.format("%025d",new BigInteger(String.format("%06d", ultimo_movimiento.getIdorigenc())+String.format("%06d",Integer.parseInt(ultimo_movimiento.getPeriodo()))+String.valueOf(ultimo_movimiento.getIdtipo())+String.format("%06d",ultimo_movimiento.getIdpoliza())));
+											response.setFolioAutorizacion(folioAuto);
+
 											RegistroTransaccion registro = new RegistroTransaccion();
 											registro.setFechaRegistro(requestTx.getRegistro().getFechaSolicitud());
 											response.setRegistro(registro);
@@ -551,7 +555,7 @@ public class CapaTransferenciaService {
 												
 											SpeiDispersion speiTx = new SpeiDispersion();
 											speiTx.setFoliosolicitante(tx.getFoliosolicitante());
-											speiTx.setFolioautorizacion(response.getFolioAutorizacion());
+											speiTx.setFolioautorizacion(response.getFolioAutorizacion());//String.format("%025d",new BigInteger(response.getFolioAutorizacion())).replace(' ', '0'));
 											speiTx.setEstadotransaccion("EN PROCESO");
 											
 											speiTx = speiService.guardar(speiTx);
@@ -594,7 +598,7 @@ public class CapaTransferenciaService {
 	
 	public ResponseActualizacionSpei actualizarOrden(SpeiActualizacion orden) {
 		ResponseActualizacionSpei response = new ResponseActualizacionSpei();
-		log.info("folio:"+orden.getFolioSolicitante());
+		log.info("folio autorizacion actualizar orden:"+orden.getFolioSolicitante());
 		try {
 			SpeiDispersion spei =  speiService.buscarPorId(String.valueOf(orden.getFolioAutorizacion()));
 			if(spei != null) {
@@ -656,7 +660,7 @@ public class CapaTransferenciaService {
 						
 						
 						
-						//Preparando movimiento cargo
+						//Preparando movimiento cargo-- comision
 						pk_paso = new MovimientoPasoPK(timestamp,Integer.parseInt(tb_usuario_spei.getDato1()),funcionService.sesion(),
 										String.valueOf(orden.getFolioSolicitante()),
 										0,

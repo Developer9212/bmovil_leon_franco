@@ -110,6 +110,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>Banca</finalName>
 	</build>
 
 </project>
