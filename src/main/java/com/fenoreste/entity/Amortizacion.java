@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class Amortizacion implements Serializable {   
 
-	private static final long serialVersionUID = 1L;
+
     
 	@EmbeddedId AuxiliarPK pk;
 	@Column(name="idamortizacion")
@@ -65,5 +65,5 @@ public class Amortizacion implements Serializable {
     @Column(name = "diasvencidos")
     private Integer diasvencidos;
 
-    
+    private static final long serialVersionUID = 1L;
 }

@@ -46,7 +46,7 @@ public class SpeiClient {
 	public tokenModel tokenAuth() {
 		tokenModel modeloToken = new tokenModel();
 			 try {
-				 
+				 //hoy
 				 CustomOkHttpClient customOkHttpClient = new CustomOkHttpClient();
 				 
 				 client = customOkHttpClient.createOkHttpClient();
@@ -84,6 +84,7 @@ public class SpeiClient {
 			       client = customOkHttpClient.createOkHttpClient();
 			     	mediaType = MediaType.parse("application/json");
 					json = gson.toJson(modelo);
+ 					log.info("Json clabe:"+json);
 					body = RequestBody.create(mediaType, json);
 					TablaPK tbPkHost = new TablaPK("banca_movil", "path_alianza_servicios");
 					Tabla tbHost = tablaService.buscarPorId(tbPkHost);			
@@ -106,6 +107,39 @@ public class SpeiClient {
 			log.info("::::::::::::::::::Error al dar de alta clabe::::::::::::::::::::::"+e.getMessage());
 		}
 		return respuesta;
+	}
+
+
+	public boolean bajaClabe(String clabe) {
+		String[] respuesta = new String[2];
+		try {
+			CustomOkHttpClient customOkHttpClient = new CustomOkHttpClient();
+			client = customOkHttpClient.createOkHttpClient();
+			mediaType = MediaType.parse("application/json");
+
+
+			body = RequestBody.create(mediaType, json);
+			TablaPK tbPkHost = new TablaPK("banca_movil", "path_alianza_servicios");
+			Tabla tbHost = tablaService.buscarPorId(tbPkHost);
+			request = new Request.Builder()
+					.url(tbHost.getDato2() + basePath + altaClabePath)
+					.method("POST", body)
+					.addHeader("Authorization", "Bearer "+ tokenAuth().getAccess_token())
+					.addHeader("Content-Type", "application/json")
+					.build();
+			response = client.newCall(request).execute();
+			respuesta[0] = String.valueOf(response.code());
+			String resultado = response.body().string();
+			if(response.code() != 201) {
+				log.info("Codigo http:"+response.code()+",respuesta:"+resultado);
+				respuesta[1] = resultado;
+			}else {
+				log.info("Respuesta Alianza:"+resultado);
+			}
+		} catch (Exception e) {
+			log.info("::::::::::::::::::Error al dar de alta clabe::::::::::::::::::::::"+e.getMessage());
+		}
+		return true;
 	}
 	
 	

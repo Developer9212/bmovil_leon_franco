@@ -20,25 +20,36 @@ import com.fenoreste.service.IFuncionService;
 @CrossOrigin(origins = "*")
 
 public class ClabesSTPController {
-   
+
 	@Autowired
 	private CapaSTPService capaSTPService;
-	
+
 	@Autowired
 	private IFuncionService funcionService;
-	
-	@GetMapping(value="altaclabe/{socio}")
+
+	@GetMapping(value = "altaclabe/{socio}")
 	public ResponseEntity<?> altaClabe(@PathVariable("socio") String socio) {
 		ResponseError error = new ResponseError();
-		if(funcionService.horaActividad()) {
+		if (funcionService.horaActividad()) {
 			Ws_clabe_respuesta_alianza res = capaSTPService.altaClabe(socio);
-			return new ResponseEntity<>(res,HttpStatus.CREATED);	
-		}else {
-			error.setCodigo("App-"+409+".AppN-M");
+			return new ResponseEntity<>(res, HttpStatus.CREATED);
+		} else {
+			error.setCodigo("App-" + 409 + ".AppN-M");
 			error.setMensajeUsuario("VERIFIQUE SU HORARIO DE ACTIVIDAD DIA,HORA O CONTACTE A SU PROVEEDOR...");
-			return new ResponseEntity<>(error,HttpStatus.CONFLICT);	
+			return new ResponseEntity<>(error, HttpStatus.CONFLICT);
 		}
-		
-		
+	}
+
+	@GetMapping(value = "bajaclabe/{socio}")
+	public ResponseEntity<?> bajaClabe(@PathVariable("socio") String socio) {
+		ResponseError error = new ResponseError();
+		if (funcionService.horaActividad()) {
+			Ws_clabe_respuesta_alianza res = capaSTPService.altaClabe(socio);
+			return new ResponseEntity<>(res, HttpStatus.CREATED);
+		} else {
+			error.setCodigo("App-" + 409 + ".AppN-M");
+			error.setMensajeUsuario("VERIFIQUE SU HORARIO DE ACTIVIDAD DIA,HORA O CONTACTE A SU PROVEEDOR...");
+			return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+		}
 	}
 }

@@ -409,10 +409,9 @@ public class CapaCuentaService {
                 			 }
 
 							 String cadena =  mov_ad.getFecha();//"2022-12-30 23:13:00.469696-05";
-							 int index = cadena.indexOf("-05");
-							 if (index != -1) {
-								  cadena = cadena.substring(0, index).replace(" ", "T")+"-06";
-							 }
+
+							 cadena = cadena.replaceAll("-\\d{2}$", "-06").replace(" ","T");//cadena.substring(0, index).replace(" ", "T")+"-06";
+
 							 mov.setFechaTransaccion(cadena);//mov_ad.getFecha().toString().substring(0, Math.min(25, mov_ad.getFecha().length())).replace(" ","T")+"-06");//substring(0,25).replace(" ","T")+"-06");//.replace(" ","T").replace("-05","-06"));//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
                 			 mov.setFechaPublicacion(cadena);//mov_ad.getFecha().toString().substring(0, Math.min(25, mov_ad.getFecha().length())).replace(" ","T")+"-06");//mov_ad.getFecha().toString().substring(0,25).replace(" ","T")+"-06");//mov_ad.getFecha())+"T"+util.convertFechaDateHora(mov_ad.getFecha())+"-06:00");
                 			 mov.setMonto(mov_ad.getMonto().doubleValue());
