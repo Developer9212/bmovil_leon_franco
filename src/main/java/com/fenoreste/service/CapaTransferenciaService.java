@@ -191,48 +191,60 @@ public class CapaTransferenciaService {
 
                                                                 case 2:// Pago a prestamos
                                                                     // Preparamos el movimiento(Abono)
-                                                                    pk_paso = new MovimientoPasoPK(timestamp,
-                                                                            Integer.parseInt(tb_usuario_banca.getDato1()),
-                                                                            funcionService.sesion(),
-                                                                            String.valueOf(requestTx.getFolioSolicitante()),
-                                                                            auxiliar_emisor.getPk().getIdorigenp(),
-                                                                            auxiliar_emisor.getPk().getIdproducto(),
-                                                                            auxiliar_emisor.getPk().getIdauxiliar());
-                                                                    movimientoPaso = new MovimientoPaso();
-                                                                    movimientoPaso.setPk(pk_paso);
-                                                                    movimientoPaso.setIdorigen(ogs_emisor.getIdorigen());
-                                                                    movimientoPaso.setIdgrupo(ogs_emisor.getIdgrupo());
-                                                                    movimientoPaso.setIdsocio(ogs_emisor.getIdsocio());
-                                                                    movimientoPaso.setCargoabono(0);
-                                                                    movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
-                                                                    movimientoPaso.setSai_aux("");
-                                                                    movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+                                                                	String monto_liquidacion = funcionService.montoParaLiquidarPrestamo(auxiliar_receptor.getPk());
+                                                                    log.info(":::::::Monto liquidacion:"+monto_liquidacion);
+                                                                    
+                                                                    if(requestTx.getMontoTransaccion().getImporte() <= (Double.parseDouble(monto_liquidacion))){
+                                                                    	pk_paso = new MovimientoPasoPK(timestamp,
+                                                                                Integer.parseInt(tb_usuario_banca.getDato1()),
+                                                                                funcionService.sesion(),
+                                                                                String.valueOf(requestTx.getFolioSolicitante()),
+                                                                                auxiliar_emisor.getPk().getIdorigenp(),
+                                                                                auxiliar_emisor.getPk().getIdproducto(),
+                                                                                auxiliar_emisor.getPk().getIdauxiliar());
+                                                                        movimientoPaso = new MovimientoPaso();
+                                                                        movimientoPaso.setPk(pk_paso);
+                                                                        movimientoPaso.setIdorigen(ogs_emisor.getIdorigen());
+                                                                        movimientoPaso.setIdgrupo(ogs_emisor.getIdgrupo());
+                                                                        movimientoPaso.setIdsocio(ogs_emisor.getIdsocio());
+                                                                        movimientoPaso.setCargoabono(0);
+                                                                        movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
+                                                                        movimientoPaso.setSai_aux("");
+                                                                        movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
 
-                                                                    // Registro movimiento abono
-                                                                    pk_paso = new MovimientoPasoPK(timestamp,
-                                                                            Integer.parseInt(tb_usuario_banca.getDato1()),
-                                                                            funcionService.sesion(),
-                                                                            String.valueOf(requestTx.getFolioSolicitante()),
-                                                                            auxiliar_receptor.getPk().getIdorigenp(),
-                                                                            auxiliar_receptor.getPk().getIdproducto(),
-                                                                            auxiliar_receptor.getPk().getIdauxiliar());
+                                                                        // Registro movimiento abono
+                                                                        pk_paso = new MovimientoPasoPK(timestamp,
+                                                                                Integer.parseInt(tb_usuario_banca.getDato1()),
+                                                                                funcionService.sesion(),
+                                                                                String.valueOf(requestTx.getFolioSolicitante()),
+                                                                                auxiliar_receptor.getPk().getIdorigenp(),
+                                                                                auxiliar_receptor.getPk().getIdproducto(),
+                                                                                auxiliar_receptor.getPk().getIdauxiliar());
 
-                                                                    auxiliar_pk = new AuxiliarPK(
-                                                                            auxiliar_receptor.getPk().getIdorigenp(),
-                                                                            auxiliar_receptor.getPk().getIdproducto(),
-                                                                            auxiliar_receptor.getPk().getIdauxiliar());
-                                                                    sai_auxiliar = funcionService.sai_auxiliar(auxiliar_pk);
-                                                                    movimientoPaso = new MovimientoPaso();
-                                                                    movimientoPaso.setPk(pk_paso);
-                                                                    movimientoPaso.setIdorigen(auxiliar_receptor.getIdorigen());
-                                                                    movimientoPaso.setIdgrupo(auxiliar_receptor.getIdgrupo());
-                                                                    movimientoPaso.setIdsocio(auxiliar_receptor.getIdsocio());
-                                                                    movimientoPaso.setCargoabono(1);
-                                                                    movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
-                                                                    movimientoPaso.setSai_aux("");
-                                                                    movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
-                                                                    bandera_aplicar = true;
-                                                                    break;
+                                                                        auxiliar_pk = new AuxiliarPK(
+                                                                                auxiliar_receptor.getPk().getIdorigenp(),
+                                                                                auxiliar_receptor.getPk().getIdproducto(),
+                                                                                auxiliar_receptor.getPk().getIdauxiliar());
+                                                                        sai_auxiliar = funcionService.sai_auxiliar(auxiliar_pk);
+                                                                        movimientoPaso = new MovimientoPaso();
+                                                                        movimientoPaso.setPk(pk_paso);
+                                                                        movimientoPaso.setIdorigen(auxiliar_receptor.getIdorigen());
+                                                                        movimientoPaso.setIdgrupo(auxiliar_receptor.getIdgrupo());
+                                                                        movimientoPaso.setIdsocio(auxiliar_receptor.getIdsocio());
+                                                                        movimientoPaso.setCargoabono(1);
+                                                                        movimientoPaso.setMonto(requestTx.getMontoTransaccion().getImporte());
+                                                                        movimientoPaso.setSai_aux("");
+                                                                        movimientoPasoRegistro = pasoService.guardar(movimientoPaso);
+                                                                        bandera_aplicar = true;
+                                                                        break;
+                                                                    }else{
+                                                                        responseTx.setCodigo(409);
+                                                                        responseTx.setMensajeUsuario("El monto de transferencia traspasa al monto de liquidacion:"+monto_liquidacion);
+                                                                        log.info("El monto de transferencia traspasa al monto de liquidacion:"+monto_liquidacion);
+                                                                    }
+                                                                    
+                                                                    
+                                                                    
                                                             }
 
                                                         } else {
@@ -305,11 +317,9 @@ public class CapaTransferenciaService {
                                                                     break;
 
                                                                 case 2:// Pago a prestamos
-                                                                    // Preparamos el movimiento(Cargo)
-
-                                                                    String monto_liquidacion = funcionService.montoParaLiquidarPrestamo(auxiliar_receptor.getPk());
+                                                                	String monto_liquidacion = funcionService.montoParaLiquidarPrestamo(auxiliar_receptor.getPk());
                                                                     log.info(":::::::Monto liquidacion:"+monto_liquidacion);
-                                                                    if(Double.parseDouble(monto_liquidacion) <= requestTx.getMontoTransaccion().getImporte()){
+                                                                    if( requestTx.getMontoTransaccion().getImporte() <= ouble.parseDouble(monto_liquidacion) ){
                                                                         pk_paso = new MovimientoPasoPK(timestamp,
                                                                                 Integer.parseInt(tb_usuario_banca.getDato1()),
                                                                                 funcionService.sesion(),
