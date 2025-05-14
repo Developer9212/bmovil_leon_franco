@@ -14,7 +14,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 	public void configure(HttpSecurity http) throws Exception{
 		http
 		.anonymous().disable()
-		.authorizeRequests().antMatchers("/grdgrdgrdgapi/**")
+		.authorizeRequests().antMatchers("/api/**")
 		.authenticated()
 		.and()
 		.exceptionHandling()

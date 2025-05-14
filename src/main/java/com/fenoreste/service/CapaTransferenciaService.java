@@ -319,7 +319,7 @@ public class CapaTransferenciaService {
                                                                 case 2:// Pago a prestamos
                                                                 	String monto_liquidacion = funcionService.montoParaLiquidarPrestamo(auxiliar_receptor.getPk());
                                                                     log.info(":::::::Monto liquidacion:"+monto_liquidacion);
-                                                                    if( requestTx.getMontoTransaccion().getImporte() <= ouble.parseDouble(monto_liquidacion) ){
+                                                                    if( requestTx.getMontoTransaccion().getImporte() <= (Double.parseDouble(monto_liquidacion))){
                                                                         pk_paso = new MovimientoPasoPK(timestamp,
                                                                                 Integer.parseInt(tb_usuario_banca.getDato1()),
                                                                                 funcionService.sesion(),
