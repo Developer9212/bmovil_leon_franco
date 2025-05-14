@@ -308,6 +308,7 @@ public class CapaTransferenciaService {
                                                                     // Preparamos el movimiento(Cargo)
 
                                                                     String monto_liquidacion = funcionService.montoParaLiquidarPrestamo(auxiliar_receptor.getPk());
+                                                                    log.info(":::::::Monto liquidacion:"+monto_liquidacion);
                                                                     if(Double.parseDouble(monto_liquidacion) <= requestTx.getMontoTransaccion().getImporte()){
                                                                         pk_paso = new MovimientoPasoPK(timestamp,
                                                                                 Integer.parseInt(tb_usuario_banca.getDato1()),

@@ -36,7 +36,7 @@ public class TransferenciaController {
 	
 	@PostMapping(value="entre-cuentas")
 	public ResponseEntity<?> entreCuentas(@RequestBody RequestTransferencia peticion) {
-		log.info("................Accediendo a transferencia entre cuentas propias...............");
+		log.info("................Accediendo a transferencia entre cuentas propias:"+peticion);
 		Integer tipoMovimiento = 0;
 		ResponseError error = new ResponseError();
 		if(funcionService.horaActividad()) {
