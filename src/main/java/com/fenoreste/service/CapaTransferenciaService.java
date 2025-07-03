@@ -407,6 +407,7 @@ public class CapaTransferenciaService {
                                                         tx.setMonto(requestTx.getMontoTransaccion().getImporte());
                                                         tx.setPolizacreada(ultimo_movimiento.getIdorigenc() + "-" + ultimo_movimiento.getPeriodo() + "-" + ultimo_movimiento.getIdtipo() + "-" + ultimo_movimiento.getIdpoliza());
                                                         tx.setFolioautorizacion(responseTx.getFolioAutorizacion());
+                                                        tx.setGeolocalizacion("lat:"+requestTx.getRegistro().getGeolocalizacion().getLatitud()+",long:"+requestTx.getRegistro().getGeolocalizacion().getLongitud());
                                                         tx = transferenciaService.guardar(tx);
                                                         log.info("......Poliza Generada:" + tx.getPolizacreada());
                                                         responseTx.setCodigo(200);
@@ -572,6 +573,7 @@ public class CapaTransferenciaService {
                                                     tx.setPolizacreada(ultimo_movimiento.getIdorigenc() + "-" + ultimo_movimiento.getPeriodo() + "-" + ultimo_movimiento.getIdtipo() + "-" + ultimo_movimiento.getIdpoliza());
                                                     tx.setEsspei(true);
                                                     tx.setFolioautorizacion(response.getFolioAutorizacion());
+                                                    tx.setGeolocalizacion(requestTx.getRegistro().getGeolocalizacion().getLatitud()+"-"+requestTx.getRegistro().getGeolocalizacion().getLongitud());
                                                     tx = transferenciaService.guardar(tx);
                                                     log.info("......Poliza Generada:" + tx.getPolizacreada());
 

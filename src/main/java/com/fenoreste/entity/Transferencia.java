@@ -27,6 +27,7 @@ public class Transferencia {
 	   private Double monto;
 	   private Double comision;
 	   private String polizacreada;
+	   private String geolocalizacion;
 	   
 	   private boolean esspei;
 	

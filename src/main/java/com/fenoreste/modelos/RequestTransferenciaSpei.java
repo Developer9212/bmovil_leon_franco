@@ -14,5 +14,6 @@ public class RequestTransferenciaSpei {
 	private BeneficiarioSpei beneficiarioSpei;
 	private DetallesTransaccion montoTransaccion;
 	private RegistroTransaccion registro;
+
 	
 }
